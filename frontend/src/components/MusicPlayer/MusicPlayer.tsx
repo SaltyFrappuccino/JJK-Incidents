@@ -125,9 +125,14 @@ export function MusicPlayer() {
                 className="progress-bar"
                 min="0"
                 max={duration || 0}
-                value={currentTime}
-                onChange={(e) => seek(parseFloat(e.target.value))}
-                disabled={!duration}
+                value={currentTime || 0}
+                onChange={(e) => {
+                  const newTime = parseFloat(e.target.value);
+                  if (!isNaN(newTime) && duration > 0) {
+                    seek(newTime);
+                  }
+                }}
+                disabled={!duration || duration === 0}
               />
               <span className="time-display">{formatTime(duration)}</span>
             </div>

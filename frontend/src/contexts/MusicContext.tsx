@@ -277,9 +277,11 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const seek = useCallback((time: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = time;
-      dispatch({ type: 'SET_CURRENT_TIME', payload: time });
+    if (audioRef.current && !isNaN(time) && isFinite(time)) {
+      // Ensure time is within valid range
+      const clampedTime = Math.max(0, Math.min(time, audioRef.current.duration || 0));
+      audioRef.current.currentTime = clampedTime;
+      dispatch({ type: 'SET_CURRENT_TIME', payload: clampedTime });
     }
   }, []);
 

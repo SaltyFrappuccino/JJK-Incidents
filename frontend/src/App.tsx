@@ -74,22 +74,12 @@ function AppContent() {
     <div className="app">
       <header className="app-header">
         <h1>Инциденты Дзюдзюцу</h1>
-        <p>Стратегическая Игра на Выживание</p>
       </header>
 
       <main className="app-main">
         {appState === 'home' && (
           <div className="home-screen">
             <div className="home-content">
-              <div className="game-description">
-                <h2>Добро пожаловать в Инциденты Дзюдзюцу</h2>
-                <p>
-                  Многопользовательская социальная стратегическая игра, основанная на мире Jujutsu Kaisen. 
-                  Игроки берут на себя роли экзорцистов и должны убедить друг друга в своей 
-                  полезности для опасных миссий, стратегически раскрывая свои способности.
-                </p>
-              </div>
-              
               <div className="home-actions">
                 <CreateRoom onRoomCreated={handleRoomCreated} />
                 <div className="divider">или</div>

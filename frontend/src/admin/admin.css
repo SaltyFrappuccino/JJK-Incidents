@@ -1,0 +1,522 @@
+/* Админ-панель стили */
+.admin-panel {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: 100vh;
+  background: #0d1117;
+  color: #e6edf3;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+.admin-sidebar {
+  background: #161b22;
+  border-right: 1px solid #30363d;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-header {
+  padding: 2rem 1.5rem;
+  border-bottom: 1px solid #30363d;
+}
+
+.admin-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  color: #58a6ff;
+  font-weight: 600;
+}
+
+.admin-header p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #8b949e;
+}
+
+.admin-nav {
+  flex: 1;
+  padding: 1rem;
+}
+
+.admin-nav button {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  margin-bottom: 0.5rem;
+  background: transparent;
+  border: none;
+  color: #e6edf3;
+  text-align: left;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-nav button:hover {
+  background: #21262d;
+}
+
+.admin-nav button.active {
+  background: #388bfd;
+  color: white;
+}
+
+.admin-footer {
+  padding: 1rem;
+  border-top: 1px solid #30363d;
+}
+
+.btn-logout {
+  width: 100%;
+  padding: 0.75rem;
+  background: #da3633;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.btn-logout:hover {
+  background: #b91c1c;
+}
+
+.admin-content {
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+/* Стили для списка миссий */
+.list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.list-header h2 {
+  margin: 0;
+  color: #e6edf3;
+  font-size: 1.75rem;
+}
+
+.search-bar {
+  margin-bottom: 2rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #e6edf3;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.missions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.mission-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s;
+}
+
+.mission-card:hover {
+  border-color: #58a6ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.mission-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.mission-card-header h3 {
+  margin: 0;
+  color: #e6edf3;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.mission-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.difficulty-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.difficulty-badge.легкая { 
+  background: #238636; 
+  color: white;
+}
+.difficulty-badge.средняя { 
+  background: #d29922; 
+  color: white;
+}
+.difficulty-badge.сложная { 
+  background: #da3633; 
+  color: white;
+}
+.difficulty-badge.экстремальная { 
+  background: #8957e5; 
+  color: white;
+}
+
+.custom-badge {
+  padding: 0.25rem 0.5rem;
+  background: #1f6feb;
+  color: white;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.mission-description {
+  color: #8b949e;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.mission-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #8b949e;
+}
+
+.mission-objectives {
+  margin-bottom: 1rem;
+}
+
+.mission-objectives strong {
+  color: #e6edf3;
+  font-size: 0.9rem;
+}
+
+.mission-objectives ul {
+  margin: 0.5rem 0 0 0;
+  padding-left: 1.2rem;
+  color: #8b949e;
+  font-size: 0.85rem;
+}
+
+.mission-objectives li {
+  margin-bottom: 0.25rem;
+}
+
+.mission-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* Стили для редактора миссий */
+.mission-editor {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.editor-header h2 {
+  margin: 0;
+  color: #e6edf3;
+  font-size: 1.75rem;
+}
+
+.editor-form {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.form-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #30363d;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+}
+
+.form-section h3 {
+  margin: 0 0 1.5rem 0;
+  color: #58a6ff;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #e6edf3;
+  font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  color: #e6edf3;
+  font-family: inherit;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #58a6ff;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+/* Кнопки */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: #238636;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #2ea043;
+}
+
+.btn-secondary {
+  background: #6e7681;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #8b949e;
+}
+
+.btn-edit {
+  background: #1f6feb;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.btn-edit:hover {
+  background: #388bfd;
+}
+
+.btn-delete {
+  background: #da3633;
+  color: white;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.btn-delete:hover {
+  background: #b91c1c;
+}
+
+.btn-large {
+  padding: 1rem 2rem;
+  font-size: 1rem;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Стили для входа */
+.admin-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #0d1117;
+  color: #e6edf3;
+}
+
+.login-container {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 3rem;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-header h1 {
+  margin: 0 0 0.5rem 0;
+  color: #58a6ff;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.login-header p {
+  margin: 0 0 2rem 0;
+  color: #8b949e;
+  font-size: 1rem;
+}
+
+.login-form {
+  text-align: left;
+}
+
+.login-footer {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #30363d;
+}
+
+.login-footer p {
+  margin: 0;
+  color: #8b949e;
+  font-size: 0.85rem;
+}
+
+.login-footer code {
+  background: #21262d;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  color: #e6edf3;
+}
+
+.error-message {
+  background: #da3633;
+  color: white;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.loading {
+  color: #8b949e;
+  font-size: 1.1rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #8b949e;
+}
+
+.settings-placeholder {
+  text-align: center;
+  padding: 3rem;
+  color: #8b949e;
+}
+
+.settings-placeholder h2 {
+  color: #e6edf3;
+  margin-bottom: 1rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .admin-panel {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .admin-sidebar {
+    order: 2;
+    border-right: none;
+    border-top: 1px solid #30363d;
+  }
+  
+  .admin-content {
+    order: 1;
+    padding: 1rem;
+  }
+  
+  .missions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}

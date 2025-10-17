@@ -1,0 +1,93 @@
+import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { io, Socket } from 'socket.io-client';
+
+interface SocketContextType {
+  socket: Socket | null;
+  isConnected: boolean;
+  connect: () => void;
+  disconnect: () => void;
+}
+
+const SocketContext = createContext<SocketContextType | undefined>(undefined);
+
+interface SocketProviderProps {
+  children: ReactNode;
+}
+
+export function SocketProvider({ children }: SocketProviderProps) {
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [isConnected, setConnected] = useState(false);
+
+  const connect = () => {
+    if (socket?.connected) {
+      return;
+    }
+
+    const wsUrl = (import.meta.env?.VITE_WS_URL) || 'http://localhost:3001';
+    console.log('Connecting to WebSocket server:', wsUrl);
+
+    const newSocket = io(wsUrl, {
+      transports: ['websocket', 'polling'],
+      timeout: 5000,
+      forceNew: true
+    });
+
+    newSocket.on('connect', () => {
+      console.log('Connected to server');
+      setConnected(true);
+    });
+
+    newSocket.on('disconnect', (reason) => {
+      console.log('Disconnected from server:', reason);
+      setConnected(false);
+    });
+
+    newSocket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+      setConnected(false);
+    });
+
+    newSocket.on('error', (error) => {
+      console.error('Socket error:', error);
+    });
+
+    setSocket(newSocket);
+  };
+
+  const disconnect = () => {
+    if (socket) {
+      socket.disconnect();
+      setSocket(null);
+      setConnected(false);
+    }
+  };
+
+  useEffect(() => {
+    connect();
+
+    return () => {
+      disconnect();
+    };
+  }, []);
+
+  const value: SocketContextType = {
+    socket,
+    isConnected,
+    connect,
+    disconnect
+  };
+
+  return (
+    <SocketContext.Provider value={value}>
+      {children}
+    </SocketContext.Provider>
+  );
+}
+
+export function useSocket(): SocketContextType {
+  const context = useContext(SocketContext);
+  if (context === undefined) {
+    throw new Error('useSocket must be used within a SocketProvider');
+  }
+  return context;
+}

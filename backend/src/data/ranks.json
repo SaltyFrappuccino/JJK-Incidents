@@ -1,0 +1,10 @@
+[
+  { "value": "Четвёртый", "weight": 30 },
+  { "value": "Третий", "weight": 25 },
+  { "value": "Полу-Второй", "weight": 20 },
+  { "value": "Второй", "weight": 15 },
+  { "value": "Полу-Первый", "weight": 8 },
+  { "value": "Первый", "weight": 4 },
+  { "value": "Первый Особый", "weight": 3 },
+  { "value": "Особый", "weight": 2 }
+]

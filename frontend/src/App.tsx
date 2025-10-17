@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { SocketProvider } from './contexts/SocketContext';
 import { GameProvider, useGame } from './contexts/GameContext';
+import { MusicProvider } from './contexts/MusicContext';
 import { CreateRoom } from './components/Lobby/CreateRoom';
 import { JoinRoom } from './components/Lobby/JoinRoom';
 import { LobbyWaitingRoom } from './components/Lobby/LobbyWaitingRoom';
 import { GameLoop } from './components/Game/GameLoop';
 import { AdminPanel } from './admin/AdminPanel';
+import { MusicPlayer } from './components/MusicPlayer/MusicPlayer';
 import './index.css';
 
 type AppState = 'home' | 'lobby' | 'game' | 'admin';
@@ -134,7 +136,7 @@ function AppContent() {
         style={{ 
           position: 'fixed', 
           bottom: '10px', 
-          right: '10px', 
+          left: '10px', 
           opacity: 0.3,
           background: 'transparent',
           border: 'none',
@@ -147,6 +149,9 @@ function AppContent() {
         ⚙️
       </button>
 
+      {/* Music Player */}
+      <MusicPlayer />
+
     </div>
   );
 }
@@ -155,7 +160,9 @@ export function App() {
   return (
     <SocketProvider>
       <GameProvider>
-        <AppContent />
+        <MusicProvider>
+          <AppContent />
+        </MusicProvider>
       </GameProvider>
     </SocketProvider>
   );

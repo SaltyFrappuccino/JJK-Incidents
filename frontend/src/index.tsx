@@ -3,6 +3,28 @@ import index from "./index.html";
 
 const server = serve({
   routes: {
+    // Serve static files from public directory
+    "/music/*": async (req) => {
+      const url = new URL(req.url);
+      // Decode URL to handle spaces and special characters
+      const decodedPath = decodeURIComponent(url.pathname);
+      const filePath = `./public${decodedPath}`;
+      console.log(`Serving static file: ${url.pathname} -> ${filePath}`);
+      try {
+        const file = Bun.file(filePath);
+        if (await file.exists()) {
+          console.log(`File found: ${filePath}`);
+          return new Response(file);
+        } else {
+          console.log(`File not found: ${filePath}`);
+          return new Response("File not found", { status: 404 });
+        }
+      } catch (error) {
+        console.error(`Error serving file ${filePath}:`, error);
+        return new Response("Error serving file", { status: 500 });
+      }
+    },
+
     // Serve index.html for all unmatched routes.
     "/*": index,
 

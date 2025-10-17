@@ -1,7 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import { GameManager } from '../services/GameManager.js';
 import { MissionService } from '../services/MissionService.js';
-import { GameState, RevealedCharacteristic } from '../types/GameTypes.js';
+import { GameState, RevealedCharacteristic, GameRoom } from '../types/GameTypes.js';
+import { ActiveAbility } from '../types/AbilityTypes.js';
+import { CharacterCard } from '../types/CharacterTypes.js';
 
 interface ClientToServerEvents {
   create_room: (data: { hostName: string }, callback: (response: { roomCode: string; playerId: string }) => void) => void;
@@ -20,6 +22,8 @@ interface ClientToServerEvents {
   toggle_ready: (data: { roomCode: string; playerId: string }, callback: (response: { success: boolean; error?: string }) => void) => void;
   generate_epilogue: (data: { roomCode: string; playerId: string }, callback: (response: { success: boolean; epilogue?: string; error?: string }) => void) => void;
   set_target_survivors: (data: { roomCode: string; playerId: string; targetSurvivors: number }, callback: (response: { success: boolean; error?: string }) => void) => void;
+  use_ability: (data: { roomCode: string; playerId: string; abilityId: string; targetId?: string }, callback: (response: { success: boolean; error?: string; message?: string; revealed?: RevealedCharacteristic }) => void) => void;
+  get_abilities: (data: { roomCode: string; playerId: string }, callback: (response: { success: boolean; abilities?: ActiveAbility[]; error?: string }) => void) => void;
 }
 
 interface ServerToClientEvents {
@@ -32,6 +36,7 @@ interface ServerToClientEvents {
   player_left: (data: { playerId: string; playerName: string }) => void;
   error: (error: { message: string; code?: string }) => void;
   room_deleted: (data: { roomCode: string }) => void;
+  ability_used: (data: { playerId: string; playerName: string; abilityName: string; targetId?: string; targetName?: string; message?: string }) => void;
 }
 
 export class GameSocketHandler {
@@ -443,6 +448,75 @@ export class GameSocketHandler {
         } catch (error) {
           console.error('[Socket] Критическая ошибка при установке цели выживших:', error);
           callback({ success: false, error: 'Не удалось установить цель выживших' });
+        }
+      });
+
+      // Use ability
+      socket.on('use_ability', async (data, callback) => {
+        try {
+          const { roomCode, playerId, abilityId, targetId } = data;
+          console.log(`[Socket] Запрос использования способности: комната=${roomCode}, игрок=${playerId}, способность=${abilityId}, цель=${targetId}`);
+          
+          const result = this.gameManager.useAbility(roomCode, playerId, abilityId, targetId);
+          
+          if (result.success) {
+            console.log(`[Socket] Способность использована, рассылаем уведомление всем в комнате ${roomCode}`);
+            
+            // Get player and target names
+            const room = this.gameManager.getRoom(roomCode);
+            if (room) {
+              const player = room.players.get(playerId);
+              const target = targetId ? room.players.get(targetId) : undefined;
+              const playerAbilities = room.activeAbilities.get(playerId);
+              const ability = playerAbilities?.find(a => a.id === abilityId);
+              
+              // Broadcast ability usage to all players
+              this.io.to(roomCode).emit('ability_used', {
+                playerId,
+                playerName: player?.name || 'Unknown',
+                abilityName: ability?.name || 'Unknown',
+                targetId,
+                targetName: target?.name,
+                message: result.message
+              });
+
+              // If ability revealed something, broadcast that too
+              if (result.revealed) {
+                // Only send revealed info to the player who used the ability (Шесть Глаз)
+                socket.emit('characteristic_revealed', result.revealed);
+              }
+            }
+            
+            this.broadcastGameState(roomCode);
+          } else {
+            console.log(`[Socket] Ошибка использования способности: ${result.error}`);
+          }
+          
+          callback(result);
+        } catch (error) {
+          console.error('[Socket] Критическая ошибка при использовании способности:', error);
+          callback({ success: false, error: 'Не удалось использовать способность' });
+        }
+      });
+
+      // Get abilities
+      socket.on('get_abilities', async (data, callback) => {
+        try {
+          const { roomCode, playerId } = data;
+          console.log(`[Socket] Запрос способностей: комната=${roomCode}, игрок=${playerId}`);
+          
+          const result = this.gameManager.getPlayerAbilities(roomCode, playerId);
+          
+          if (result.success) {
+            console.log(`[Socket] Способности получены: ${result.abilities?.length || 0} шт.`);
+          } else {
+            console.log(`[Socket] Ошибка получения способностей: ${result.error}`);
+          }
+          
+          callback(result);
+        } catch (error) {
+          console.error('[Socket] Критическая ошибка при получении способностей:', error);
+          callback({ success: false, error: 'Не удалось получить способности' });
         }
       });
 

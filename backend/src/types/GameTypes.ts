@@ -1,4 +1,5 @@
 import { Mission } from './MissionTypes.js';
+import { ActiveAbility, AbilityActivation } from './AbilityTypes.js';
 
 export type GamePhase = 
   | 'lobby'
@@ -51,6 +52,12 @@ export interface GameRoom {
   roundHistory: RoundHistory[];
   aiGeneratedEpilogue?: string;
   isGeneratingEpilogue?: boolean;
+  activeAbilities: Map<string, ActiveAbility[]>; // playerId -> abilities
+  usedAbilities: AbilityActivation[];
+  blockedVotes: Set<string>; // playerIds who can't vote
+  reflectedVotes: Map<string, string>; // playerId -> reflector's playerId
+  protectedPlayers: Set<string>; // playerIds protected from elimination
+  doubleVoteDamage: Map<string, string>; // targetId -> attackerId (Критический Удар)
 }
 
 export interface RoundHistory {

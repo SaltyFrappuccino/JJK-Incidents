@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { useSocket } from './SocketContext';
+import { ActiveAbility, AbilityNotification } from '../types/AbilityTypes';
 
 // Types (simplified versions of backend types)
 export type GamePhase = 
@@ -83,6 +84,8 @@ interface GameContextType {
   myCharacter: CharacterCard | null;
   revealedCharacteristics: RevealedCharacteristic[];
   missions: Mission[];
+  myAbilities: ActiveAbility[];
+  abilityNotifications: AbilityNotification[];
   isLoading: boolean;
   error: string | null;
 
@@ -98,6 +101,8 @@ interface GameContextType {
   endMission: (epilogue: string) => Promise<{ success: boolean; error?: string }>;
   fetchMissions: (playerCount?: number) => Promise<void>;
   fetchMyCharacter: () => Promise<{ success: boolean; error?: string }>;
+  fetchMyAbilities: () => Promise<{ success: boolean; error?: string }>;
+  useAbility: (abilityId: string, targetId?: string) => Promise<{ success: boolean; error?: string; message?: string }>;
   advancePhase: () => Promise<{ success: boolean; error?: string }>;
   toggleReady: () => Promise<{ success: boolean; error?: string }>;
   clearError: () => void;
@@ -118,34 +123,41 @@ type GameAction =
   | { type: 'SET_REVEALED_CHARACTERISTICS'; payload: RevealedCharacteristic[] }
   | { type: 'ADD_REVEALED_CHARACTERISTIC'; payload: RevealedCharacteristic }
   | { type: 'SET_MISSIONS'; payload: Mission[] }
+  | { type: 'SET_MY_ABILITIES'; payload: ActiveAbility[] }
+  | { type: 'ADD_ABILITY_NOTIFICATION'; payload: AbilityNotification }
+  | { type: 'CLEAR_OLD_ABILITY_NOTIFICATIONS' }
   | { type: 'SET_MISSION_COMPLETE_CALLBACK'; payload: (() => void) | undefined }
   | { type: 'RESET_GAME' };
 
-interface GameState {
+interface GameStateInternal {
   currentRoom: string | null;
   myPlayer: Player | null;
   gameState: GameState | null;
   myCharacter: CharacterCard | null;
   revealedCharacteristics: RevealedCharacteristic[];
   missions: Mission[];
+  myAbilities: ActiveAbility[];
+  abilityNotifications: AbilityNotification[];
   isLoading: boolean;
   error: string | null;
   onMissionComplete?: () => void;
 }
 
-const initialState: GameState = {
+const initialState: GameStateInternal = {
   currentRoom: null,
   myPlayer: null,
   gameState: null,
   myCharacter: null,
   revealedCharacteristics: [],
   missions: [],
+  myAbilities: [],
+  abilityNotifications: [],
   isLoading: false,
   error: null,
   onMissionComplete: undefined
 };
 
-function gameReducer(state: GameState, action: GameAction): GameState {
+function gameReducer(state: GameStateInternal, action: GameAction): GameStateInternal {
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload };
@@ -170,6 +182,19 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       };
     case 'SET_MISSIONS':
       return { ...state, missions: action.payload };
+    case 'SET_MY_ABILITIES':
+      return { ...state, myAbilities: action.payload };
+    case 'ADD_ABILITY_NOTIFICATION':
+      return {
+        ...state,
+        abilityNotifications: [...state.abilityNotifications, action.payload]
+      };
+    case 'CLEAR_OLD_ABILITY_NOTIFICATIONS':
+      const now = Date.now();
+      return {
+        ...state,
+        abilityNotifications: state.abilityNotifications.filter(n => now - n.timestamp < 10000) // Keep last 10 seconds
+      };
     case 'SET_MISSION_COMPLETE_CALLBACK':
       return { ...state, onMissionComplete: action.payload };
     case 'RESET_GAME':
@@ -270,6 +295,20 @@ export function GameProvider({ children }: GameProviderProps) {
       dispatch({ type: 'RESET_GAME' });
     };
 
+    const handleAbilityUsed = (data: { playerId: string; playerName: string; abilityName: string; targetId?: string; targetName?: string; message?: string }) => {
+      console.log('[GameContext] Способность использована:', data);
+      const notification: AbilityNotification = {
+        playerId: data.playerId,
+        playerName: data.playerName,
+        abilityName: data.abilityName,
+        targetId: data.targetId,
+        targetName: data.targetName,
+        message: data.message,
+        timestamp: Date.now()
+      };
+      dispatch({ type: 'ADD_ABILITY_NOTIFICATION', payload: notification });
+    };
+
     // Register event listeners
     socket.on('game_updated', handleGameUpdated);
     socket.on('game_started', handleGameStarted);
@@ -280,6 +319,7 @@ export function GameProvider({ children }: GameProviderProps) {
     socket.on('player_left', handlePlayerLeft);
     socket.on('error', handleError);
     socket.on('room_deleted', handleRoomDeleted);
+    socket.on('ability_used', handleAbilityUsed);
 
     return () => {
       socket.off('game_updated', handleGameUpdated);
@@ -291,6 +331,7 @@ export function GameProvider({ children }: GameProviderProps) {
       socket.off('player_left', handlePlayerLeft);
       socket.off('error', handleError);
       socket.off('room_deleted', handleRoomDeleted);
+      socket.off('ability_used', handleAbilityUsed);
     };
   }, [socket]);
 
@@ -578,6 +619,58 @@ export function GameProvider({ children }: GameProviderProps) {
     });
   }, [socket, state.currentRoom, state.myPlayer]);
 
+  const fetchMyAbilities = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
+    if (!socket || !state.currentRoom || !state.myPlayer) {
+      return { success: false, error: 'Не в комнате или не подключен' };
+    }
+
+    return new Promise((resolve) => {
+      socket.emit('get_abilities', {
+        roomCode: state.currentRoom,
+        playerId: state.myPlayer.id
+      }, (response) => {
+        if (response.success && response.abilities) {
+          dispatch({ type: 'SET_MY_ABILITIES', payload: response.abilities });
+          resolve({ success: true });
+        } else {
+          resolve({ success: false, error: response.error || 'Не удалось получить способности' });
+        }
+      });
+    });
+  }, [socket, state.currentRoom, state.myPlayer]);
+
+  const useAbility = useCallback(async (abilityId: string, targetId?: string): Promise<{ success: boolean; error?: string; message?: string }> => {
+    if (!socket || !state.currentRoom || !state.myPlayer) {
+      return { success: false, error: 'Не в комнате или не подключен' };
+    }
+
+    return new Promise((resolve) => {
+      socket.emit('use_ability', {
+        roomCode: state.currentRoom,
+        playerId: state.myPlayer.id,
+        abilityId,
+        targetId
+      }, (response) => {
+        if (response.success) {
+          // Refresh abilities to update uses remaining
+          fetchMyAbilities();
+          resolve({ success: true, message: response.message });
+        } else {
+          resolve({ success: false, error: response.error || 'Не удалось использовать способность' });
+        }
+      });
+    });
+  }, [socket, state.currentRoom, state.myPlayer, fetchMyAbilities]);
+
+  // Clear old notifications periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch({ type: 'CLEAR_OLD_ABILITY_NOTIFICATIONS' });
+    }, 5000); // Every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   const value: GameContextType = {
     // State
     currentRoom: state.currentRoom,
@@ -586,6 +679,8 @@ export function GameProvider({ children }: GameProviderProps) {
     myCharacter: state.myCharacter,
     revealedCharacteristics: state.revealedCharacteristics,
     missions: state.missions,
+    myAbilities: state.myAbilities,
+    abilityNotifications: state.abilityNotifications,
     isLoading: state.isLoading,
     error: state.error,
 
@@ -601,6 +696,8 @@ export function GameProvider({ children }: GameProviderProps) {
     endMission,
     fetchMissions,
     fetchMyCharacter,
+    fetchMyAbilities,
+    useAbility,
     advancePhase,
     toggleReady,
     clearError,

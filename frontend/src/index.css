@@ -2516,3 +2516,351 @@ html, body {
   color: white;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
+
+/* ===============================================
+   ACTIVE ABILITIES SYSTEM
+   =============================================== */
+
+/* Abilities Panel */
+.abilities-panel {
+  position: fixed;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  max-width: 350px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+}
+
+.abilities-panel h3 {
+  color: var(--primary-purple);
+  font-size: var(--font-size-xl);
+  margin: 0 0 1rem 0;
+  text-align: center;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
+
+.abilities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ability-card {
+  background: var(--bg-secondary);
+  border: 2px solid var(--primary-purple);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  transition: all 0.3s ease;
+}
+
+.ability-card:hover:not(.ability-used) {
+  border-color: var(--primary-purple-dark);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+  transform: translateY(-2px);
+}
+
+.ability-card.ability-used {
+  border-color: var(--border-color);
+  opacity: 0.5;
+}
+
+.ability-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.ability-name {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+}
+
+.ability-uses {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  background: var(--bg-tertiary);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.ability-description {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  margin: 0.5rem 0;
+  line-height: 1.4;
+}
+
+.ability-button {
+  width: 100%;
+  padding: 0.625rem;
+  background: linear-gradient(135deg, var(--primary-purple), var(--primary-purple-dark));
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ability-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--primary-purple-dark), var(--primary-blue-dark));
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+.ability-button:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Ability Modal */
+.ability-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.ability-modal {
+  background: var(--bg-card);
+  border: 2px solid var(--primary-purple);
+  border-radius: 1rem;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: var(--shadow-glow);
+  animation: slideUp 0.3s ease;
+}
+
+.ability-modal h3 {
+  color: var(--primary-purple);
+  font-size: var(--font-size-2xl);
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
+.ability-modal-name {
+  color: var(--text-primary);
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  text-align: center;
+  margin: 0.5rem 0;
+}
+
+.ability-modal-description {
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+  text-align: center;
+  margin: 1rem 0;
+  line-height: 1.5;
+}
+
+.ability-target-selection {
+  margin: 1.5rem 0;
+}
+
+.ability-target-selection label {
+  display: block;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.ability-target-select {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+  border-radius: 0.5rem;
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ability-target-select:hover {
+  border-color: var(--primary-purple);
+}
+
+.ability-target-select:focus {
+  outline: none;
+  border-color: var(--primary-purple);
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+}
+
+.ability-error {
+  color: var(--error);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: rgba(239, 68, 68, 0.1);
+  border-radius: 0.5rem;
+}
+
+.ability-modal-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.ability-confirm-button,
+.ability-cancel-button {
+  flex: 1;
+  padding: 0.875rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.ability-confirm-button {
+  background: linear-gradient(135deg, var(--success), #059669);
+  color: white;
+}
+
+.ability-confirm-button:hover {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+  transform: translateY(-2px);
+}
+
+.ability-cancel-button {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.ability-cancel-button:hover {
+  border-color: var(--error);
+  color: var(--error);
+}
+
+/* Ability Notifications */
+.ability-notifications {
+  position: fixed;
+  top: 5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 999;
+  max-width: 400px;
+}
+
+.ability-notification {
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+  border: 2px solid var(--primary-purple);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  box-shadow: var(--shadow-lg);
+  animation: slideInRight 0.3s ease, fadeOut 0.3s ease 9.7s forwards;
+}
+
+.ability-notification strong {
+  color: var(--primary-purple);
+}
+
+.ability-notification-message {
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 0.5rem;
+  font-size: var(--font-size-xs);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .abilities-panel {
+    right: 1rem;
+    max-width: 300px;
+  }
+
+  .ability-notifications {
+    right: 1rem;
+    max-width: 350px;
+  }
+}
+
+@media (max-width: 768px) {
+  .abilities-panel {
+    position: static;
+    transform: none;
+    margin: 1rem auto;
+    max-width: 100%;
+  }
+
+  .ability-notifications {
+    right: 0.5rem;
+    max-width: calc(100% - 1rem);
+  }
+
+  .ability-modal {
+    width: 95%;
+    padding: 1.5rem;
+  }
+}

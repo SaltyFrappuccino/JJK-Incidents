@@ -10,6 +10,8 @@ import { PlayerList } from './PlayerList';
 import { MissionContext } from './MissionContext';
 import { TeamTable } from './TeamTable';
 import { CharacterSheet } from './CharacterSheet';
+import { AbilitiesPanel } from './AbilitiesPanel';
+import { AbilityNotification } from './AbilityNotification';
 
 type GameLoopPhase = 'mission_briefing' | 'reveal' | 'discussion' | 'voting' | 'round_end' | 'mission_complete';
 
@@ -18,7 +20,7 @@ interface GameLoopProps {
 }
 
 export function GameLoop({ onGameComplete }: GameLoopProps) {
-  const { gameState, myPlayer, myCharacter, nextRound, fetchMyCharacter, advancePhase, revealCharacteristic, generateAIEpilogue } = useGame();
+  const { gameState, myPlayer, myCharacter, nextRound, fetchMyCharacter, fetchMyAbilities, advancePhase, revealCharacteristic, generateAIEpilogue } = useGame();
   const [isGenerating, setIsGenerating] = useState(false);
   const [eliminatedPlayerId, setEliminatedPlayerId] = useState<string | null>(null);
   const [isAdvancingRound, setIsAdvancingRound] = useState(false);
@@ -30,13 +32,14 @@ export function GameLoop({ onGameComplete }: GameLoopProps) {
   console.log('[GameLoop] Текущая фаза:', currentPhase);
   console.log('[GameLoop] gameState:', gameState);
 
-  // Загрузить персонажа при входе в игру
+  // Загрузить персонажа и способности при входе в игру
   useEffect(() => {
     if (gameState?.gameStarted && !myCharacter) {
       console.log('[GameLoop] Загружаем персонажа при входе в игру');
       fetchMyCharacter();
+      fetchMyAbilities();
     }
-  }, [gameState?.gameStarted, myCharacter, fetchMyCharacter]);
+  }, [gameState?.gameStarted, myCharacter, fetchMyCharacter, fetchMyAbilities]);
 
   // Обработчик генерации AI эпилога
   const handleGenerateAIEpilogue = useCallback(async () => {
@@ -331,6 +334,12 @@ export function GameLoop({ onGameComplete }: GameLoopProps) {
       <div className="main-phase-content">
         {renderCurrentPhase()}
       </div>
+
+      {/* Панель активных способностей */}
+      <AbilitiesPanel />
+
+      {/* Уведомления о способностях */}
+      <AbilityNotification />
 
       {/* Внизу - таблица команды */}
       <TeamTable />

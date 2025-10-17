@@ -3,6 +3,8 @@ import { CharacterCard } from '../types/CharacterTypes.js';
 import { Mission } from '../types/MissionTypes.js';
 import { CharacterGenerator } from './CharacterGenerator.js';
 import { MissionService } from './MissionService.js';
+import { AbilityService } from './AbilityService.js';
+import { ActiveAbility, AbilityActivation } from '../types/AbilityTypes.js';
 
 export class GameManager {
   private rooms: Map<string, GameRoom> = new Map();
@@ -61,7 +63,13 @@ export class GameManager {
       createdAt: Date.now(),
       consecutiveSkips: 0,
       roundHistory: [],
-      aiGeneratedEpilogue: undefined
+      aiGeneratedEpilogue: undefined,
+      activeAbilities: new Map(),
+      usedAbilities: [],
+      blockedVotes: new Set(),
+      reflectedVotes: new Map(),
+      protectedPlayers: new Set(),
+      doubleVoteDamage: new Map()
     };
 
     this.rooms.set(roomCode, room);
@@ -207,6 +215,13 @@ export class GameManager {
         currentState: character.currentState.value,
         allRevealed: false
       });
+
+      // Detect and assign active abilities
+      const abilities = AbilityService.detectPlayerAbilities(character);
+      if (abilities.length > 0) {
+        room.activeAbilities.set(id, abilities);
+        console.log(`[GameManager] Обнаружено способностей для игрока ${player.name}: ${abilities.map(a => a.name).join(', ')}`);
+      }
     }
 
     // Set strike team size based on target survivors
@@ -308,6 +323,97 @@ export class GameManager {
     return { success: true, revealed };
   }
 
+  useAbility(roomCode: string, playerId: string, abilityId: string, targetId?: string): { success: boolean; error?: string; message?: string; revealed?: RevealedCharacteristic } {
+    console.log(`[GameManager] Использование способности: комната=${roomCode}, игрок=${playerId}, способность=${abilityId}, цель=${targetId}`);
+    
+    const room = this.rooms.get(roomCode);
+    if (!room) {
+      console.log(`[GameManager] Ошибка: комната ${roomCode} не найдена`);
+      return { success: false, error: 'Комната не найдена' };
+    }
+
+    const player = room.players.get(playerId);
+    if (!player) {
+      console.log(`[GameManager] Ошибка: игрок ${playerId} не найден`);
+      return { success: false, error: 'Игрок не найден' };
+    }
+
+    // Get player's abilities
+    const playerAbilities = room.activeAbilities.get(playerId);
+    if (!playerAbilities) {
+      return { success: false, error: 'У вас нет активных способностей' };
+    }
+
+    const ability = playerAbilities.find(a => a.id === abilityId);
+    if (!ability) {
+      return { success: false, error: 'Способность не найдена' };
+    }
+
+    // Validate ability usage
+    const validation = AbilityService.validateAbilityUsage(ability, playerId, targetId, room);
+    if (!validation.valid) {
+      return { success: false, error: validation.error };
+    }
+
+    // Apply ability effect
+    const playerCharacters = this.playerCharacters.get(roomCode)!;
+    const result = AbilityService.applyAbilityEffect(ability, playerId, targetId, room, playerCharacters);
+    
+    if (!result.success) {
+      return { success: false, error: result.error };
+    }
+
+    // Decrease uses remaining
+    ability.usesRemaining--;
+
+    // Record ability usage
+    const activation: AbilityActivation = {
+      abilityId: ability.id,
+      abilityName: ability.name,
+      playerId: playerId,
+      playerName: player.name,
+      targetId: targetId,
+      targetName: targetId ? room.players.get(targetId)?.name : undefined,
+      round: room.currentRound,
+      timestamp: Date.now()
+    };
+    room.usedAbilities.push(activation);
+
+    console.log(`[GameManager] Способность использована: ${ability.name}, осталось использований: ${ability.usesRemaining}`);
+
+    // Special handling for reveal_info ability
+    if (ability.effect === 'reveal_info' && targetId) {
+      const targetCharacter = playerCharacters.get(targetId);
+      if (targetCharacter) {
+        // Find first unrevealed characteristic
+        const categoryKeys = [
+          'rank', 'cursedTechnique', 'cursedEnergyLevel', 'generalTechniques',
+          'cursedTools', 'strengths', 'weaknesses', 'specialTraits', 'currentState'
+        ] as const;
+        const categoryNames = [
+          'Ранг', 'Проклятая Техника', 'Уровень Проклятой Энергии', 'Общие Техники',
+          'Проклятые Инструменты', 'Сильные Стороны', 'Слабые Стороны', 'Особые Черты', 'Текущее Состояние'
+        ];
+
+        for (let i = 0; i < categoryKeys.length; i++) {
+          const category = targetCharacter[categoryKeys[i]];
+          if (!category.revealed) {
+            const revealed: RevealedCharacteristic = {
+              playerId: targetId,
+              categoryIndex: i,
+              categoryName: categoryNames[i],
+              value: this.formatCharacteristicValue(category),
+              round: room.currentRound
+            };
+            return { success: true, message: result.message, revealed };
+          }
+        }
+      }
+    }
+
+    return { success: true, message: result.message };
+  }
+
   submitVote(roomCode: string, playerId: string, targetPlayerId: string | null): { success: boolean; error?: string } {
     console.log(`[GameManager] Запрос голосования: комната=${roomCode}, игрок=${playerId}, цель=${targetPlayerId}`);
     
@@ -331,6 +437,12 @@ export class GameManager {
     if (player.hasVoted) {
       console.log(`[GameManager] Ошибка: игрок ${playerId} уже проголосовал`);
       return { success: false, error: 'Вы уже проголосовали' };
+    }
+
+    // Check if player is blocked from voting
+    if (room.blockedVotes.has(playerId)) {
+      console.log(`[GameManager] Ошибка: игрок ${playerId} заблокирован и не может голосовать`);
+      return { success: false, error: 'Вы не можете голосовать в этом раунде (заблокированы способностью "Связывание")' };
     }
 
     // Если пропуск, но уже 2 раза подряд пропускали
@@ -361,12 +473,19 @@ export class GameManager {
     player.hasVoted = true;
     player.voteTarget = targetPlayerId;
     
-    if (targetPlayerId === null) {
+    // Apply vote reflection if active
+    let actualTarget = targetPlayerId;
+    if (targetPlayerId && room.reflectedVotes.has(playerId)) {
+      actualTarget = playerId; // Reflect vote back to self
+      console.log(`[GameManager] Голос игрока ${player.name} отражён на него самого способностью "Отражение"`);
+    }
+    
+    if (actualTarget === null) {
       room.votes.set(playerId, 'SKIP');
       console.log(`[GameManager] Голос засчитан: ${player.name} -> пропуск`);
     } else {
-      room.votes.set(playerId, targetPlayerId);
-      console.log(`[GameManager] Голос засчитан: ${player.name} -> ${room.players.get(targetPlayerId)?.name}`);
+      room.votes.set(playerId, actualTarget);
+      console.log(`[GameManager] Голос засчитан: ${player.name} -> ${room.players.get(actualTarget)?.name}`);
     }
 
     // Проверить если все проголосовали
@@ -388,11 +507,17 @@ export class GameManager {
     
     console.log(`[GameManager] Подсчёт голосов для комнаты ${roomCode}`);
     
-    // Подсчёт голосов
+    // Подсчёт голосов с учётом удвоенного урона
     const voteCounts = new Map<string, number>();
     room.votes.forEach((targetId) => {
       if (targetId !== 'SKIP') {
-        voteCounts.set(targetId, (voteCounts.get(targetId) || 0) + 1);
+        let voteWeight = 1;
+        // Check if target has double damage
+        if (room.doubleVoteDamage.has(targetId)) {
+          voteWeight = 2;
+          console.log(`[GameManager] Голос против ${targetId} удвоен способностью "Критический Удар"`);
+        }
+        voteCounts.set(targetId, (voteCounts.get(targetId) || 0) + voteWeight);
       }
     });
     
@@ -429,8 +554,15 @@ export class GameManager {
       eliminatedId = null;
       room.consecutiveSkips++;
     } else if (eliminatedId) {
-      console.log(`[GameManager] Исключён игрок ${eliminatedId}`);
-      room.consecutiveSkips = 0;
+      // Check if player is protected
+      if (room.protectedPlayers.has(eliminatedId)) {
+        console.log(`[GameManager] Игрок ${eliminatedId} защищён способностью "Защитная Зона", исключение отменено`);
+        eliminatedId = null;
+        room.consecutiveSkips++;
+      } else {
+        console.log(`[GameManager] Исключён игрок ${eliminatedId}`);
+        room.consecutiveSkips = 0;
+      }
     }
     
     // Сохранить результат
@@ -468,8 +600,41 @@ export class GameManager {
     let eliminatedPlayerId: string | undefined;
     if (room.lastVoteResult?.eliminatedId) {
       eliminatedPlayerId = room.lastVoteResult.eliminatedId;
-      room.eliminatedPlayers.push(eliminatedPlayerId);
-      console.log(`[GameManager] Игрок ${eliminatedPlayerId} исключён из комнаты ${roomCode}`);
+      
+      // Check for resurrection ability
+      const playerAbilities = room.activeAbilities.get(eliminatedPlayerId);
+      const resurrectAbility = playerAbilities?.find(a => a.effect === 'resurrect' && a.usesRemaining > 0);
+      
+      if (resurrectAbility) {
+        console.log(`[GameManager] Игрок ${eliminatedPlayerId} воскрешён способностью "Реинкарнация"`);
+        resurrectAbility.usesRemaining--;
+        
+        // Heal player to full health
+        const playerCharacters = this.playerCharacters.get(roomCode);
+        const character = playerCharacters?.get(eliminatedPlayerId);
+        if (character) {
+          character.currentState.value = 'Здоров';
+        }
+        
+        // Record ability usage
+        const player = room.players.get(eliminatedPlayerId);
+        if (player) {
+          const activation: AbilityActivation = {
+            abilityId: resurrectAbility.id,
+            abilityName: resurrectAbility.name,
+            playerId: eliminatedPlayerId,
+            playerName: player.name,
+            round: room.currentRound,
+            timestamp: Date.now()
+          };
+          room.usedAbilities.push(activation);
+        }
+        
+        eliminatedPlayerId = undefined; // Cancel elimination
+      } else {
+        room.eliminatedPlayers.push(eliminatedPlayerId);
+        console.log(`[GameManager] Игрок ${eliminatedPlayerId} исключён из комнаты ${roomCode}`);
+      }
     }
 
     // Проверить достигнута ли цель по выживших
@@ -490,6 +655,9 @@ export class GameManager {
     // Продолжаем игру - новый раунд
     room.currentRound++;
     room.lastVoteResult = undefined; // Очистить результаты прошлого голосования
+    
+    // Clear temporary ability effects
+    this.clearTemporaryAbilityEffects(roomCode);
     
     console.log(`[GameManager] Начинаем раунд ${room.currentRound}`);
     this.transitionToPhase(roomCode, 'reveal');
@@ -793,6 +961,42 @@ export class GameManager {
     }
 
     console.log(`[GameManager] Все характеристики раскрыты для комнаты ${roomCode}`);
+  }
+
+  getPlayerAbilities(roomCode: string, playerId: string): { success: boolean; abilities?: ActiveAbility[]; error?: string } {
+    const room = this.rooms.get(roomCode);
+    if (!room) {
+      return { success: false, error: 'Комната не найдена' };
+    }
+
+    const player = room.players.get(playerId);
+    if (!player) {
+      return { success: false, error: 'Игрок не найден' };
+    }
+
+    const abilities = room.activeAbilities.get(playerId) || [];
+    return { success: true, abilities };
+  }
+
+  private clearTemporaryAbilityEffects(roomCode: string): void {
+    const room = this.rooms.get(roomCode);
+    if (!room) return;
+
+    console.log(`[GameManager] Очистка временных эффектов способностей для комнаты ${roomCode}`);
+    
+    // Clear blocked votes
+    room.blockedVotes.clear();
+    
+    // Clear reflected votes
+    room.reflectedVotes.clear();
+    
+    // Clear protected players
+    room.protectedPlayers.clear();
+    
+    // Clear double vote damage
+    room.doubleVoteDamage.clear();
+    
+    console.log(`[GameManager] Временные эффекты способностей очищены`);
   }
 
   private transitionToPhase(roomCode: string, phase: GamePhase): void {

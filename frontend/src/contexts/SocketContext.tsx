@@ -25,7 +25,8 @@ export function SocketProvider({ children }: SocketProviderProps) {
       return;
     }
 
-    const wsUrl = WS_URL;
+    // Используем текущий origin если WS_URL пустой (для Vercel rewrites)
+    const wsUrl = WS_URL || window.location.origin;
     console.log('Connecting to WebSocket server:', wsUrl);
 
     const newSocket = io(wsUrl, {

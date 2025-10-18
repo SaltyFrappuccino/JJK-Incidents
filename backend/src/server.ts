@@ -21,7 +21,8 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://95.81.121.225',
   'http://95.81.121.225:3000',
-  'http://95.81.121.225:4000'
+  'http://95.81.121.225:4000',
+  'https://jjk-incidents.vercel.app'
 ];
 
 const corsOrigin = process.env['CORS_ORIGIN'] || allowedOrigins;

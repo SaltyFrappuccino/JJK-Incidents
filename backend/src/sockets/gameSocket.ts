@@ -214,6 +214,7 @@ export class GameSocketHandler {
         try {
           const { roomCode, playerId, categoryIndex } = data;
           console.log(`[Socket] Запрос на раскрытие характеристики: комната=${roomCode}, игрок=${playerId}, категория=${categoryIndex}`);
+          console.log(`[Socket] Данные запроса:`, JSON.stringify(data, null, 2));
           
           const result = this.gameManager.revealCharacteristic(roomCode, playerId, categoryIndex);
           

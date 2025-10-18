@@ -246,6 +246,13 @@ export function GameProvider({ children }: GameProviderProps) {
     };
 
     const handleCharacteristicRevealed = (revealed: RevealedCharacteristic) => {
+      console.log('[GameContext] Получено событие characteristic_revealed:', revealed);
+      console.log('[GameContext] Детали раскрытия:', {
+        playerId: revealed.playerId,
+        categoryName: revealed.categoryName,
+        value: revealed.value,
+        round: revealed.round
+      });
       dispatch({ type: 'ADD_REVEALED_CHARACTERISTIC', payload: revealed });
     };
 

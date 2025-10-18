@@ -251,6 +251,11 @@ export class GameManager {
       return { success: false, error: 'Игрок не найден' };
     }
 
+    if (room.eliminatedPlayers.includes(playerId)) {
+      console.log(`[GameManager] Ошибка: игрок ${playerId} исключен и не может раскрывать`);
+      return { success: false, error: 'Вы исключены из игры' };
+    }
+
     if (room.gamePhase !== 'reveal') {
       console.log(`[GameManager] Ошибка: не фаза раскрытия (текущая фаза: ${room.gamePhase})`);
       return { success: false, error: 'Не фаза раскрытия' };
@@ -271,6 +276,13 @@ export class GameManager {
       return { success: false, error: 'Персонаж не найден' };
     }
 
+    console.log(`[GameManager] Раскрытие для игрока: ID=${playerId}, Имя=${player.name}, Роль=${player.role}`);
+    console.log(`[GameManager] Персонаж получен:`, {
+      rank: character.rank.value,
+      cursedTechnique: character.cursedTechnique.value,
+      cursedEnergyLevel: character.cursedEnergyLevel.value
+    });
+
     // Get the category name and value
     const categoryNames = [
       'Ранг', 'Проклятая Техника', 'Уровень Проклятой Энергии', 'Общие Техники',
@@ -289,6 +301,9 @@ export class GameManager {
     const categoryKey = categoryKeys[categoryIndex];
     const category = character[categoryKey];
 
+    console.log(`[GameManager] Запрошенная категория: индекс=${categoryIndex}, название=${categoryNames[categoryIndex]}, ключ=${categoryKey}`);
+    console.log(`[GameManager] Категория объект:`, category);
+
     if (category.revealed) {
       return { success: false, error: 'Категория уже раскрыта' };
     }
@@ -301,11 +316,14 @@ export class GameManager {
     console.log(`[GameManager] Обновлён флаг revealed для игрока ${player.name} (${playerId}), роль=${player.role}, категория=${categoryNames[categoryIndex]}`);
 
     // Create revealed characteristic record
+    const categoryValue = this.formatCharacteristicValue(category);
+    console.log(`[GameManager] Значение для раскрытия: "${categoryValue}" из категории:`, category);
+
     const revealed: RevealedCharacteristic = {
       playerId,
       categoryIndex,
       categoryName: categoryNames[categoryIndex],
-      value: this.formatCharacteristicValue(category),
+      value: categoryValue,
       round: room.currentRound
     };
 
@@ -427,6 +445,11 @@ export class GameManager {
     if (!player) {
       console.log(`[GameManager] Ошибка: игрок ${playerId} не найден`);
       return { success: false, error: 'Игрок не найден' };
+    }
+
+    if (room.eliminatedPlayers.includes(playerId)) {
+      console.log(`[GameManager] Ошибка: игрок ${playerId} исключен и не может голосовать`);
+      return { success: false, error: 'Вы исключены из игры' };
     }
 
     if (room.gamePhase !== 'voting') {
@@ -770,10 +793,21 @@ export class GameManager {
   }
 
   private formatCharacteristicValue(category: any): string {
+    console.log(`[GameManager] formatCharacteristicValue вызван с категорией:`, {
+      revealed: category.revealed,
+      value: category.value,
+      isArray: Array.isArray(category.value)
+    });
+    
     if (Array.isArray(category.value)) {
-      return category.value.join(', ');
+      const result = category.value.join(', ');
+      console.log(`[GameManager] Массив значений преобразован в: "${result}"`);
+      return result;
     }
-    return String(category.value);
+    
+    const result = String(category.value);
+    console.log(`[GameManager] Единичное значение преобразовано в: "${result}"`);
+    return result;
   }
 
   private checkAndAdvancePhase(roomCode: string): void {
@@ -783,19 +817,24 @@ export class GameManager {
     console.log(`[GameManager] Проверка готовности к переходу фазы: комната=${roomCode}, фаза=${room.gamePhase}`);
 
     if (room.gamePhase === 'reveal') {
-      const allPlayersRevealed = Array.from(room.players.values()).every(player => player.hasRevealed);
+      // Исключаем вылетевших игроков из проверки
+      const activePlayers = Array.from(room.players.values())
+        .filter(p => !room.eliminatedPlayers.includes(p.id));
+      
+      const allPlayersRevealed = activePlayers.every(player => player.hasRevealed);
+      
       if (allPlayersRevealed) {
-        console.log(`[GameManager] Все игроки раскрыли характеристики, переходим к обсуждению`);
+        console.log(`[GameManager] Все активные игроки раскрыли характеристики, переходим к обсуждению`);
         this.transitionToPhase(roomCode, 'discussion');
         // ВАЖНО: Пометить что нужно обновить состояние
         room.needsBroadcast = true;
       } else {
-        const revealedCount = Array.from(room.players.values()).filter(p => p.hasRevealed).length;
-        const notRevealedPlayers = Array.from(room.players.values())
+        const revealedCount = activePlayers.filter(p => p.hasRevealed).length;
+        const notRevealedPlayers = activePlayers
           .filter(p => !p.hasRevealed)
           .map(p => `${p.name}(${p.role})`)
           .join(', ');
-        console.log(`[GameManager] Раскрыто ${revealedCount}/${room.players.size} игроков. Не раскрыли: ${notRevealedPlayers}`);
+        console.log(`[GameManager] Раскрыто ${revealedCount}/${activePlayers.length} активных игроков. Не раскрыли: ${notRevealedPlayers}`);
       }
     }
   }
@@ -860,10 +899,12 @@ export class GameManager {
     player.readyToVote = !player.readyToVote;
     console.log(`[GameManager] Игрок ${player.name} готовность: ${player.readyToVote}`);
     
-    // Проверить если все готовы
-    const allReady = Array.from(room.players.values()).every(p => p.readyToVote);
+    // Проверить если все активные игроки готовы (исключаем вылетевших)
+    const activePlayers = Array.from(room.players.values())
+      .filter(p => !room.eliminatedPlayers.includes(p.id));
+    const allReady = activePlayers.every(p => p.readyToVote);
     if (allReady && room.gamePhase === 'discussion') {
-      console.log(`[GameManager] Все игроки готовы, переходим к голосованию`);
+      console.log(`[GameManager] Все активные игроки готовы, переходим к голосованию`);
       this.transitionToPhase(roomCode, 'voting');
     }
     

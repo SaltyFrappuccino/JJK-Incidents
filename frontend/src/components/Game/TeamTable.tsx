@@ -113,12 +113,13 @@ export function TeamTable() {
             {gameState.players.map((player) => {
               const characteristics = getPlayerCharacteristics(player.id);
               const isMyPlayer = player.id === myPlayer?.id;
+              const isEliminated = gameState.eliminatedPlayers.includes(player.id);
               const revealedCount = revealedCharacteristics.filter(rc => rc.playerId === player.id).length;
 
               return (
                 <tr 
                   key={player.id} 
-                  className={`player-row ${isMyPlayer ? 'my-player' : ''} ${player.role === 'host' ? 'host-player' : ''}`}
+                  className={`player-row ${isMyPlayer ? 'my-player' : ''} ${player.role === 'host' ? 'host-player' : ''} ${isEliminated ? 'eliminated-player' : ''}`}
                 >
                   <td className="player-cell">
                     <div className="player-info">
@@ -126,6 +127,7 @@ export function TeamTable() {
                         {player.name}
                         {player.role === 'host' && <span className="badge host-badge">МИ</span>}
                         {isMyPlayer && <span className="badge you-badge">ВЫ</span>}
+                        {isEliminated && <span className="badge eliminated-badge">ИСКЛЮЧЕН</span>}
                       </div>
                       <div className="player-status">
                         {player.isConnected ? (

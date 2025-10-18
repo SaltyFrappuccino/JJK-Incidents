@@ -12,7 +12,8 @@ export function VotingPhase({ onPhaseComplete }: VotingPhaseProps) {
   const [hasVoted, setHasVoted] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
 
-  const eligiblePlayers = gameState?.players.filter(p => p.id !== myPlayer?.id) || [];
+  const activePlayers = gameState?.players.filter(p => !gameState.eliminatedPlayers.includes(p.id)) || [];
+  const eligiblePlayers = activePlayers.filter(p => p.id !== myPlayer?.id);
   const consecutiveSkips = gameState?.consecutiveSkips || 0;
 
   useEffect(() => {
@@ -67,8 +68,8 @@ export function VotingPhase({ onPhaseComplete }: VotingPhaseProps) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const playersWhoHaveVoted = gameState?.players.filter(p => p.hasVoted).length || 0;
-  const totalPlayers = gameState?.players.length || 0;
+  const playersWhoHaveVoted = activePlayers.filter(p => p.hasVoted).length;
+  const totalPlayers = activePlayers.length;
 
   return (
     <div className="voting-phase">

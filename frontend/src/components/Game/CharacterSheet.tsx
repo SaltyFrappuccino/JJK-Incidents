@@ -59,9 +59,9 @@ export function CharacterSheet({ onCharacteristicSelect, selectedCategory, canSe
 
   const formatValue = (value: any) => {
     if (Array.isArray(value.value)) {
-      return value.value.length > 0 ? value.value.join(', ') : 'Нет';
+      return value.value.length > 0 ? value.value.join(', ') : 'Ничего';
     }
-    return value.value || 'Неизвестно';
+    return value.value || 'Ничего';
   };
 
   const getCategoryIcon = (categoryName: string) => {

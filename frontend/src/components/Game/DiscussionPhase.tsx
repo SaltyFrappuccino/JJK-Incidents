@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useGame, RevealedCharacteristic } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/GameContext';
+import type { RevealedCharacteristic } from '../../contexts/GameContext';
 
 interface DiscussionPhaseProps {
   onPhaseComplete: () => void;
@@ -7,7 +8,7 @@ interface DiscussionPhaseProps {
 
 export function DiscussionPhase({ onPhaseComplete }: DiscussionPhaseProps) {
   const { gameState, revealedCharacteristics, toggleReady, myPlayer } = useGame();
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes for discussion
+  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes for discussion
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -62,8 +63,9 @@ export function DiscussionPhase({ onPhaseComplete }: DiscussionPhaseProps) {
     rc.round === gameState?.round
   );
 
-  const readyCount = gameState?.players.filter(p => p.readyToVote).length || 0;
-  const totalPlayers = gameState?.players.length || 0;
+  const activePlayers = gameState?.players.filter(p => !gameState.eliminatedPlayers.includes(p.id)) || [];
+  const readyCount = activePlayers.filter(p => p.readyToVote).length;
+  const totalPlayers = activePlayers.length;
   const isReady = myPlayer?.readyToVote || false;
 
   const handleToggleReady = async () => {

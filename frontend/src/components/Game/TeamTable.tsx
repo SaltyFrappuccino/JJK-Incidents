@@ -143,47 +143,47 @@ export function TeamTable() {
                   </td>
                   <td className="characteristic-cell">
                     <div className="characteristic-value">
-                      {characteristics.rank?.value || '—'}
+                      {characteristics.rank ? (characteristics.rank.value || 'Ничего') : '—'}
                     </div>
                   </td>
                   <td className="characteristic-cell">
                     <div className="characteristic-value">
-                      {characteristics.cursedTechnique?.value || '—'}
+                      {characteristics.cursedTechnique ? (characteristics.cursedTechnique.value || 'Ничего') : '—'}
                     </div>
                   </td>
                   <td className="characteristic-cell">
                     <div className="characteristic-value">
-                      {characteristics.cursedEnergyLevel?.value || '—'}
+                      {characteristics.cursedEnergyLevel ? (characteristics.cursedEnergyLevel.value || 'Ничего') : '—'}
                     </div>
                   </td>
                   <td className="characteristic-cell">
                     <div className="characteristic-value">
-                      {characteristics.generalTechniques?.value || '—'}
+                      {characteristics.generalTechniques ? (characteristics.generalTechniques.value || 'Ничего') : '—'}
                     </div>
                   </td>
                   <td className="characteristic-cell">
                     <div className="characteristic-value">
-                      {characteristics.cursedTools?.value || '—'}
+                      {characteristics.cursedTools ? (characteristics.cursedTools.value || 'Ничего') : '—'}
                     </div>
                   </td>
                   <td className="characteristic-cell">
                     <div className="characteristic-value">
-                      {characteristics.strengths?.value || '—'}
+                      {characteristics.strengths ? (characteristics.strengths.value || 'Ничего') : '—'}
                     </div>
                   </td>
                   <td className="characteristic-cell">
                     <div className="characteristic-value">
-                      {characteristics.weaknesses?.value || '—'}
+                      {characteristics.weaknesses ? (characteristics.weaknesses.value || 'Ничего') : '—'}
                     </div>
                   </td>
                   <td className="characteristic-cell">
                     <div className="characteristic-value">
-                      {characteristics.specialTraits?.value || '—'}
+                      {characteristics.specialTraits ? (characteristics.specialTraits.value || 'Ничего') : '—'}
                     </div>
                   </td>
                   <td className="characteristic-cell">
                     <div className="characteristic-value">
-                      {characteristics.currentState?.value || '—'}
+                      {characteristics.currentState ? (characteristics.currentState.value || 'Ничего') : '—'}
                     </div>
                   </td>
                 </tr>

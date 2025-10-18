@@ -23,6 +23,7 @@ export interface Player {
   voteTarget?: string;
   hasRevealed: boolean;
   revealedCategory?: number;
+  readyToVote?: boolean;
 }
 
 export interface Mission {

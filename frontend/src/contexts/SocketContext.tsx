@@ -25,13 +25,13 @@ export function SocketProvider({ children }: SocketProviderProps) {
       return;
     }
 
-    // Используем текущий origin если WS_URL пустой (для Vercel rewrites)
-    const wsUrl = WS_URL || window.location.origin;
+    // Прямое подключение к бэкенду (Socket.io не работает через Vercel rewrites)
+    const wsUrl = WS_URL;
     console.log('Connecting to WebSocket server:', wsUrl);
 
     const newSocket = io(wsUrl, {
-      // Используем только polling для Vercel (Vercel не поддерживает WebSocket rewrites)
-      transports: ['polling'],
+      // Пробуем WebSocket, если не получится - polling fallback
+      transports: ['websocket', 'polling'],
       timeout: 10000,
       forceNew: true,
       reconnectionAttempts: 5,

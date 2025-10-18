@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../config';
 
 interface Mission {
   id: number;
@@ -29,7 +30,7 @@ export function MissionList({ onEdit }: MissionListProps) {
   const loadMissions = async () => {
     try {
       const password = localStorage.getItem('adminPassword');
-      const response = await fetch('/api/admin/missions', {
+      const response = await fetch(`${API_URL}/api/admin/missions`, {
         headers: { 'x-admin-password': password || '' }
       });
       
@@ -51,7 +52,7 @@ export function MissionList({ onEdit }: MissionListProps) {
     
     try {
       const password = localStorage.getItem('adminPassword');
-      const response = await fetch(`/api/admin/missions/${id}`, {
+      const response = await fetch(`${API_URL}/api/admin/missions/${id}`, {
         method: 'DELETE',
         headers: { 'x-admin-password': password || '' }
       });

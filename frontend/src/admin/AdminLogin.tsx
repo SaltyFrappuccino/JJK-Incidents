@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../config';
 
 interface AdminLoginProps {
   onLogin: () => void;
@@ -13,7 +14,7 @@ export function AdminLogin({ onLogin }: AdminLoginProps) {
     setError('');
 
     try {
-      const response = await fetch('/api/admin/missions', {
+      const response = await fetch(`${API_URL}/api/admin/missions`, {
         headers: { 'x-admin-password': password }
       });
 

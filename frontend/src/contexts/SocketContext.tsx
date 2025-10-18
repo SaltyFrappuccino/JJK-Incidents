@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { WS_URL } from '../config';
 
 interface SocketContextType {
   socket: Socket | null;
@@ -23,7 +25,7 @@ export function SocketProvider({ children }: SocketProviderProps) {
       return;
     }
 
-    const wsUrl = (import.meta.env?.VITE_WS_URL) || 'http://localhost:3001';
+    const wsUrl = WS_URL;
     console.log('Connecting to WebSocket server:', wsUrl);
 
     const newSocket = io(wsUrl, {

@@ -14,12 +14,32 @@ dotenv.config();
 
 const app = express();
 const server = createServer(app);
-const port = process.env.PORT || 3001;
+const port = process.env['PORT'] || 4000;
 
-// CORS configuration
-const corsOrigin = process.env.CORS_ORIGIN || 'http://localhost:3000';
+// CORS configuration - разрешаем запросы с сервера и локально
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://95.81.121.225',
+  'http://95.81.121.225:3000',
+  'http://95.81.121.225:4000'
+];
+
+const corsOrigin = process.env['CORS_ORIGIN'] || allowedOrigins;
 app.use(cors({
-  origin: corsOrigin,
+  origin: (origin, callback) => {
+    // Разрешаем запросы без origin (например, мобильные приложения или Postman)
+    if (!origin) return callback(null, true);
+    
+    if (Array.isArray(corsOrigin)) {
+      if (corsOrigin.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    } else {
+      callback(null, origin === corsOrigin);
+    }
+  },
   credentials: true
 }));
 
@@ -31,20 +51,25 @@ app.use('/api/admin', adminRouter);
 // Socket.io setup
 const io = new Server(server, {
   cors: {
-    origin: corsOrigin,
+    origin: allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: true
-  }
+  },
+  transports: ['websocket', 'polling']
 });
+
+// Global service references
+let missionService: MissionService;
+let db: any;
 
 // Initialize database and services
 async function startServer() {
   try {
-    const dbPath = process.env.DATABASE_PATH || './src/database/missions.db';
-    const db = await initializeDatabase(dbPath);
+    const dbPath = process.env['DATABASE_PATH'] || './src/database/missions.db';
+    db = await initializeDatabase(dbPath);
 
     // Initialize services
-    const missionService = new MissionService(db);
+    missionService = new MissionService(db);
     const gameManager = new GameManager(missionService);
 
     // Initialize socket handler
@@ -63,7 +88,7 @@ async function startServer() {
 startServer();
 
 // Basic health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({ 
     status: 'healthy', 
     timestamp: new Date().toISOString(),
@@ -72,16 +97,10 @@ app.get('/health', (req, res) => {
 });
 
 // API endpoints for missions (optional - mainly used by frontend)
-app.get('/api/missions', async (req, res) => {
+app.get('/api/missions', async (_req, res) => {
   try {
-    const playerCount = req.query.playerCount ? parseInt(req.query.playerCount as string) : undefined;
-    let missions;
-    
-    if (playerCount) {
-      missions = await missionService.getMissionsForPlayerCount(playerCount);
-    } else {
-      missions = await missionService.getAllMissions();
-    }
+    // Получаем все миссии (фильтрацию по игрокам можно добавить позже если нужно)
+    const missions = await missionService.getAllMissions();
     
     res.json({ success: true, missions });
   } catch (error) {
@@ -94,7 +113,8 @@ app.get('/api/missions/:id', async (req, res) => {
   try {
     const mission = await missionService.getMissionById(req.params.id);
     if (!mission) {
-      return res.status(404).json({ success: false, error: 'Mission not found' });
+      res.status(404).json({ success: false, error: 'Mission not found' });
+      return;
     }
     
     res.json({ success: true, mission });
@@ -108,7 +128,8 @@ app.get('/api/missions/:id/briefing', async (req, res) => {
   try {
     const briefing = await missionService.getMissionBriefing(req.params.id);
     if (!briefing) {
-      return res.status(404).json({ success: false, error: 'Mission briefing not found' });
+      res.status(404).json({ success: false, error: 'Mission briefing not found' });
+      return;
     }
     
     res.json({ success: true, briefing });
@@ -131,7 +152,7 @@ app.post('/api/missions', async (req, res) => {
 });
 
 // Error handling middleware
-app.use((error: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((error: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('Unhandled error:', error);
   res.status(500).json({ success: false, error: 'Internal server error' });
 });

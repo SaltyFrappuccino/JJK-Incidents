@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_URL } from '../config';
 
 interface Mission {
   id: number;
@@ -30,8 +31,8 @@ export function MissionEditor({ mission, onSave, onCancel }: MissionEditorProps)
     try {
       const password = localStorage.getItem('adminPassword');
       const url = formData.id 
-        ? `/api/admin/missions/${formData.id}`
-        : '/api/admin/missions';
+        ? `${API_URL}/api/admin/missions/${formData.id}`
+        : `${API_URL}/api/admin/missions`;
       
       const method = formData.id ? 'PUT' : 'POST';
       

@@ -67,7 +67,7 @@ export interface RevealedCharacteristic {
 }
 
 export interface CharacterCard {
-  rank: { revealed: boolean; value: string };
+  rank: { revealed: boolean; value: string; description?: string };
   cursedTechnique: { revealed: boolean; value: string; description?: string };
   cursedEnergyLevel: { revealed: boolean; value: string };
   generalTechniques: { revealed: boolean; value: string[]; descriptions?: string[] };

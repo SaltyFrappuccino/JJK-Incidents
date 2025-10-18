@@ -33,7 +33,7 @@ export class CharacterGenerator {
   }
 
   generateCharacter(options: CharacterGenerationOptions = {}): CharacterCard {
-    const rank = this.selectWeightedRandom(this.pools.ranks);
+    const rankItem = this.selectWeightedRandomValue(this.pools.ranks);
     const cursedTechniqueItem = this.selectWeightedRandomItem(this.pools.cursedTechniques);
     const cursedEnergyLevel = this.selectWeightedRandom(this.pools.cursedEnergyLevels);
     const generalTechniquesItems = this.selectMultipleWeightedItems(this.pools.generalTechniques, 0, 3);
@@ -50,7 +50,8 @@ export class CharacterGenerator {
     return {
       rank: {
         revealed: false,
-        value: rank
+        value: rankItem.value,
+        ...(rankItem.description && { description: rankItem.description })
       },
       cursedTechnique: {
         revealed: false,
@@ -128,6 +129,24 @@ export class CharacterGenerator {
   }
 
   private selectWeightedRandomItem(items: WeightedName[]): WeightedName {
+    if (items.length === 0) {
+      throw new Error('Cannot select from empty array');
+    }
+    
+    const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const item of items) {
+      random -= item.weight;
+      if (random <= 0) {
+        return item;
+      }
+    }
+    
+    return items[items.length - 1]!;
+  }
+
+  private selectWeightedRandomValue<T>(items: WeightedValue<T>[]): WeightedValue<T> {
     if (items.length === 0) {
       throw new Error('Cannot select from empty array');
     }

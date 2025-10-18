@@ -1,4 +1,4 @@
-export type Rank = 'Четвёртый' | 'Третий' | 'Полу-Второй' | 'Второй' | 'Полу-Первый' | 'Первый' | 'Первый Особый' | 'Особый';
+export type Rank = 'Четвёртый' | 'Третий' | 'Полу-Второй' | 'Второй' | 'Полу-Первый' | 'Первый' | 'Первый Особый' | 'Особый' | 'Уровень Сукуны и Сатору';
 export type CursedEnergyLevel = 'Очень низкий' | 'Низкий' | 'Средний' | 'Выше среднего' | 'Высокий' | 'Огромный' | 'Уровень Оккотсу' | 'Уровень Сукуны';
 export type PlayerState = 
   | 'Здоров'
@@ -26,6 +26,7 @@ export type PlayerState =
 export interface WeightedValue<T = string> {
   value: T;
   weight: number;
+  description?: string;
 }
 
 export interface WeightedName {
@@ -42,7 +43,10 @@ export interface Characteristic {
 
 export interface CharacterCard {
   // 1. Rank
-  rank: Characteristic & { value: Rank };
+  rank: Characteristic & { 
+    value: Rank;
+    description?: string; // Для AI контекста
+  };
   
   // 2. Cursed Technique (innate ability)
   cursedTechnique: Characteristic & {

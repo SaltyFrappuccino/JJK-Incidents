@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react';
-import { Track, MusicPlayerState, MusicPlayerActions } from '../types/MusicTypes';
+import type { Track, MusicPlayerState, MusicPlayerActions } from '../types/MusicTypes';
 
 interface MusicContextType extends MusicPlayerState, MusicPlayerActions {}
 
@@ -147,7 +147,10 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
       // Auto-play first track if available
       if (playlist.length > 0 && !stateRef.current.currentTrack) {
         console.log('Auto-playing first track:', playlist[0]);
-        selectTrack(playlist[0].id);
+        const firstTrack = playlist[0];
+        if (firstTrack) {
+          selectTrack(firstTrack.id);
+        }
       }
     } catch (error) {
       console.error('Error loading playlist:', error);
@@ -189,12 +192,13 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
         if (playlist.length > 0) {
           console.log('Auto-selecting first track:', playlist[0]);
           const track = playlist[0];
-          dispatch({ type: 'SET_CURRENT_TRACK', payload: track });
-          dispatch({ type: 'SET_ERROR', payload: null });
-          if (audioRef.current) {
-            console.log('Setting audio src to:', track.file);
-            audioRef.current.src = track.file;
-            audioRef.current.load();
+          if (track) {
+            dispatch({ type: 'SET_CURRENT_TRACK', payload: track });
+            dispatch({ type: 'SET_ERROR', payload: null });
+            if (audioRef.current) {
+              console.log('Setting audio src to:', track.file);
+              audioRef.current.src = track.file;
+              audioRef.current.load();
             
             // Auto-play after track is loaded
             audioRef.current.addEventListener('canplay', () => {
@@ -208,6 +212,7 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
                 dispatch({ type: 'SET_ERROR', payload: 'Автовоспроизведение заблокировано браузером. Нажмите ▶ для запуска музыки.' });
               });
             }, { once: true });
+            }
           }
         }
       } catch (error) {
@@ -227,10 +232,14 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
 
   const play = useCallback(() => {
     if (audioRef.current && state.currentTrack) {
-      audioRef.current.play().catch(() => {
-        dispatch({ type: 'SET_ERROR', payload: 'Autoplay blocked. Click play to start music.' });
+      audioRef.current.play().then(() => {
+        console.log('Manual play successful');
+        dispatch({ type: 'SET_PLAYING', payload: true });
+        dispatch({ type: 'SET_ERROR', payload: null });
+      }).catch((error) => {
+        console.log('Manual play failed:', error);
+        dispatch({ type: 'SET_ERROR', payload: 'Не удалось запустить музыку. Попробуйте еще раз.' });
       });
-      dispatch({ type: 'SET_PLAYING', payload: true });
     }
   }, [state.currentTrack]);
 
@@ -269,7 +278,10 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     if (state.currentTrack) {
       const currentIndex = state.playlist.findIndex(t => t.id === state.currentTrack!.id);
       const nextIndex = (currentIndex + 1) % state.playlist.length;
-      selectTrack(state.playlist[nextIndex].id);
+      const nextTrack = state.playlist[nextIndex];
+      if (nextTrack) {
+        selectTrack(nextTrack.id);
+      }
     }
   }, [state.currentTrack, state.playlist, selectTrack]);
 
@@ -277,7 +289,10 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
     if (state.currentTrack) {
       const currentIndex = state.playlist.findIndex(t => t.id === state.currentTrack!.id);
       const prevIndex = currentIndex === 0 ? state.playlist.length - 1 : currentIndex - 1;
-      selectTrack(state.playlist[prevIndex].id);
+      const prevTrack = state.playlist[prevIndex];
+      if (prevTrack) {
+        selectTrack(prevTrack.id);
+      }
     }
   }, [state.currentTrack, state.playlist, selectTrack]);
 

@@ -10,7 +10,7 @@ import { AdminPanel } from './admin/AdminPanel';
 import { MusicPlayer } from './components/MusicPlayer/MusicPlayer';
 import './index.css';
 
-type AppState = 'home' | 'lobby' | 'game' | 'admin';
+type AppState = 'home' | 'lobby' | 'game' | 'admin' | 'epilogue';
 
 function AppContent() {
   const [appState, setAppState] = useState<AppState>('home');
@@ -53,7 +53,7 @@ function AppContent() {
     setMissionCompleteCallback(() => setAppState('epilogue'));
   }, [setMissionCompleteCallback]);
 
-  // Обработчик для включения музыки при первом клике пользователя
+  // Обработчик для включения музыки при любом клике пользователя
   useEffect(() => {
     const handleUserInteraction = () => {
       if (!isPlaying && error?.includes('заблокировано браузером')) {
@@ -63,9 +63,10 @@ function AppContent() {
     };
 
     // Добавляем обработчики для различных типов взаимодействия пользователя
-    document.addEventListener('click', handleUserInteraction, { once: true });
-    document.addEventListener('keydown', handleUserInteraction, { once: true });
-    document.addEventListener('touchstart', handleUserInteraction, { once: true });
+    // Убираем { once: true } чтобы обработчик работал постоянно
+    document.addEventListener('click', handleUserInteraction);
+    document.addEventListener('keydown', handleUserInteraction);
+    document.addEventListener('touchstart', handleUserInteraction);
 
     return () => {
       document.removeEventListener('click', handleUserInteraction);

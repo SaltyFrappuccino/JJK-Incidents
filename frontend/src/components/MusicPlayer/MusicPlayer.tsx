@@ -45,11 +45,16 @@ export function MusicPlayer() {
   if (!currentTrack) {
     return (
       <div className="music-player collapsed">
-        {error && (
-          <div className="music-player-error">
-            {error}
-          </div>
-        )}
+      {error && (
+        <div className={`music-player-error ${error.includes('заблокировано браузером') ? 'autoplay-blocked' : ''}`}>
+          {error}
+          {error.includes('заблокировано браузером') && (
+            <div className="autoplay-hint">
+              💡 Кликните в любом месте экрана для запуска музыки
+            </div>
+          )}
+        </div>
+      )}
         <div className="music-player-content">
           <div className="track-info">
             <div className="track-title">{error ? 'Ошибка загрузки' : 'Загрузка...'}</div>

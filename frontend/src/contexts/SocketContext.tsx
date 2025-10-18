@@ -25,8 +25,8 @@ export function SocketProvider({ children }: SocketProviderProps) {
       return;
     }
 
-    // Прямое подключение к бэкенду (Socket.io не работает через Vercel rewrites)
-    const wsUrl = WS_URL;
+    // Подключение через текущий origin (Caddy проксирует на бэкенд)
+    const wsUrl = WS_URL || window.location.origin;
     console.log('Connecting to WebSocket server:', wsUrl);
 
     const newSocket = io(wsUrl, {

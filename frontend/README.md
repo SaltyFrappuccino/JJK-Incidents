@@ -107,6 +107,8 @@ Connecting to WebSocket server: <URL>
 1. Бэкенд запущен на `95.81.121.225:4000`
 2. В `backend/src/server.ts` есть ваш домен в `allowedOrigins`
 
+**Примечание:** Socket.io использует только HTTP long-polling (не WebSocket), потому что Vercel не поддерживает WebSocket rewrites. Это нормально и работает отлично!
+
 ### API запросы не работают
 
 Проверьте:

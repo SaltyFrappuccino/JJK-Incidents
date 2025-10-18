@@ -45,7 +45,8 @@ export class GameManager {
       role: 'host',
       isConnected: true,
       hasVoted: false,
-      hasRevealed: false
+      hasRevealed: false,
+      revealedCount: 0
     };
 
     const room: GameRoom = {
@@ -106,7 +107,8 @@ export class GameManager {
       role: 'participant',
       isConnected: true,
       hasVoted: false,
-      hasRevealed: false
+      hasRevealed: false,
+      revealedCount: 0
     };
 
     room.players.set(playerId, player);
@@ -261,9 +263,12 @@ export class GameManager {
       return { success: false, error: 'Не фаза раскрытия' };
     }
 
-    if (player.hasRevealed) {
-      console.log(`[GameManager] Ошибка: игрок ${playerId} уже раскрыл характеристику в этом раунде`);
-      return { success: false, error: 'Игрок уже раскрыл характеристику в этом раунде' };
+    // Определяем сколько характеристик нужно раскрыть в этом раунде
+    const requiredReveals = room.currentRound === 1 ? 2 : 1;
+    
+    if (player.revealedCount >= requiredReveals) {
+      console.log(`[GameManager] Ошибка: игрок ${playerId} уже раскрыл ${player.revealedCount} характеристик в этом раунде (требуется ${requiredReveals})`);
+      return { success: false, error: `Игрок уже раскрыл ${player.revealedCount} характеристик в этом раунде (требуется ${requiredReveals})` };
     }
 
     const playerCharacters = this.playerCharacters.get(roomCode);
@@ -310,8 +315,12 @@ export class GameManager {
 
     // Mark as revealed
     category.revealed = true;
-    player.hasRevealed = true;
+    player.revealedCount += 1;
     player.revealedCategory = categoryIndex;
+    
+    // Устанавливаем hasRevealed только если игрок раскрыл все необходимые характеристики
+    const requiredReveals = room.currentRound === 1 ? 2 : 1;
+    player.hasRevealed = player.revealedCount >= requiredReveals;
 
     console.log(`[GameManager] Обновлён флаг revealed для игрока ${player.name} (${playerId}), роль=${player.role}, категория=${categoryNames[categoryIndex]}`);
 
@@ -693,6 +702,7 @@ export class GameManager {
       player.voteTarget = undefined;
       player.revealedCategory = undefined;
       player.readyToVote = false; // Сбросить готовность к голосованию
+      player.revealedCount = 0; // Сбросить счетчик раскрытых характеристик
     }
 
     return { success: true, eliminatedPlayerId, gameEnded: false };
@@ -821,20 +831,23 @@ export class GameManager {
       const activePlayers = Array.from(room.players.values())
         .filter(p => !room.eliminatedPlayers.includes(p.id));
       
-      const allPlayersRevealed = activePlayers.every(player => player.hasRevealed);
+      // Определяем сколько характеристик нужно раскрыть в этом раунде
+      const requiredReveals = room.currentRound === 1 ? 2 : 1;
+      
+      const allPlayersRevealed = activePlayers.every(player => player.revealedCount >= requiredReveals);
       
       if (allPlayersRevealed) {
-        console.log(`[GameManager] Все активные игроки раскрыли характеристики, переходим к обсуждению`);
+        console.log(`[GameManager] Все активные игроки раскрыли ${requiredReveals} характеристик, переходим к обсуждению`);
         this.transitionToPhase(roomCode, 'discussion');
         // ВАЖНО: Пометить что нужно обновить состояние
         room.needsBroadcast = true;
       } else {
-        const revealedCount = activePlayers.filter(p => p.hasRevealed).length;
+        const playersWithRequiredReveals = activePlayers.filter(p => p.revealedCount >= requiredReveals).length;
         const notRevealedPlayers = activePlayers
-          .filter(p => !p.hasRevealed)
-          .map(p => `${p.name}(${p.role})`)
+          .filter(p => p.revealedCount < requiredReveals)
+          .map(p => `${p.name}(${p.role}) - ${p.revealedCount}/${requiredReveals}`)
           .join(', ');
-        console.log(`[GameManager] Раскрыто ${revealedCount}/${activePlayers.length} активных игроков. Не раскрыли: ${notRevealedPlayers}`);
+        console.log(`[GameManager] Раскрыли ${requiredReveals} характеристик: ${playersWithRequiredReveals}/${activePlayers.length} активных игроков. Не завершили: ${notRevealedPlayers}`);
       }
     }
   }
@@ -1061,6 +1074,7 @@ export class GameManager {
         player.hasRevealed = false;
         player.revealedCategory = undefined;
         player.readyToVote = false; // Сбросить готовность к голосованию
+        player.revealedCount = 0; // Сбросить счетчик раскрытых характеристик
       }
     }
 

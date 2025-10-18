@@ -24,6 +24,7 @@ export interface Player {
   hasRevealed: boolean;
   revealedCategory?: number;
   readyToVote?: boolean;
+  revealedCount: number; // Количество раскрытых характеристик в текущем раунде
 }
 
 export interface Mission {

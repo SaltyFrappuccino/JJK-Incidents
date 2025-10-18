@@ -9,7 +9,7 @@ interface CharacterSheetProps {
 }
 
 export function CharacterSheet({ onCharacteristicSelect, selectedCategory, canSelect }: CharacterSheetProps) {
-  const { myCharacter } = useGame();
+  const { myCharacter, gameState } = useGame();
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
   const [localSelectedCategory, setLocalSelectedCategory] = useState<number | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
@@ -85,7 +85,12 @@ export function CharacterSheet({ onCharacteristicSelect, selectedCategory, canSe
       <div className="card">
         <div className="card-header">
           <h3>Ваш Персонаж</h3>
-          <p>Ваши секретные способности и черты</p>
+          <p>
+            {gameState?.round === 1 
+              ? "Ваши секретные способности и черты (раскройте 2 характеристики)"
+              : "Ваши секретные способности и черты (раскройте 1 характеристику)"
+            }
+          </p>
         </div>
 
         <div className="character-grid">
@@ -129,7 +134,12 @@ export function CharacterSheet({ onCharacteristicSelect, selectedCategory, canSe
 
         <div className="character-notes">
           <p>
-            <strong>Помните:</strong> Выбирайте свои раскрытия осторожно. Каждая характеристика, которую вы раскрываете, 
+            <strong>Помните:</strong> Выбирайте свои раскрытия осторожно. 
+            {gameState?.round === 1 
+              ? " В первом раунде нужно раскрыть 2 характеристики. "
+              : " "
+            }
+            Каждая характеристика, которую вы раскрываете, 
             будет видна всем игрокам и может повлиять на их решения при голосовании.
           </p>
         </div>

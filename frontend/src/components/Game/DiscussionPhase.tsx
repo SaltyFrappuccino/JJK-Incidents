@@ -107,9 +107,9 @@ export function DiscussionPhase({ onPhaseComplete }: DiscussionPhaseProps) {
                 {gameState?.players
                   .filter(p => p.readyToVote)
                   .map(player => (
-                    <span key={player.id} className="ready-player">
+                    <div key={player.id} className="ready-player">
                       {player.name}
-                    </span>
+                    </div>
                   ))}
               </div>
             </div>

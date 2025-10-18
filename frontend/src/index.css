@@ -3363,3 +3363,46 @@ html, body {
   background: rgba(59, 130, 246, 0.3);
   border-color: rgba(59, 130, 246, 0.6);
 }
+
+/* ==========================================
+   Список готовых к голосованию игроков
+   ========================================== */
+.ready-players {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+}
+
+.ready-players h4 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.ready-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ready-player {
+  padding: 4px 8px;
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.ready-player::before {
+  content: '✓';
+  margin-right: 6px;
+  color: var(--success);
+  font-weight: bold;
+}

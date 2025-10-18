@@ -3223,3 +3223,143 @@ html, body {
     font-size: 16px;
   }
 }
+
+/* ==========================================
+   Вылетевшие игроки
+   ========================================== */
+.player-row.eliminated-player {
+  opacity: 0.5;
+  background: rgba(239, 68, 68, 0.05);
+  position: relative;
+}
+
+.player-row.eliminated-player::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 48%, rgba(239, 68, 68, 0.3) 50%, transparent 52%);
+  pointer-events: none;
+}
+
+.eliminated-badge {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ==========================================
+   Свернутые уведомления о способностях
+   ========================================== */
+.ability-notifications {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.ability-notifications.collapsed {
+  height: 50px;
+  overflow: hidden;
+}
+
+.collapse-toggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+  z-index: 10;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+.collapse-toggle:hover {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.6);
+  transform: scale(1.05);
+}
+
+.collapse-toggle:active {
+  transform: scale(0.95);
+}
+
+.ability-notifications.collapsed .collapse-toggle {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.ability-notifications.collapsed .collapse-toggle:hover {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+/* ==========================================
+   Свернутая панель способностей
+   ========================================== */
+.abilities-panel {
+  transition: all 0.3s ease;
+}
+
+.abilities-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.abilities-panel-header h3 {
+  margin: 0;
+}
+
+.abilities-collapse-toggle {
+  background: rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  min-width: 40px;
+}
+
+.abilities-collapse-toggle:hover {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.6);
+  transform: scale(1.05);
+}
+
+.abilities-collapse-toggle:active {
+  transform: scale(0.95);
+}
+
+.abilities-panel.collapsed {
+  max-height: 60px;
+  overflow: hidden;
+}
+
+.abilities-panel.collapsed .abilities-collapse-toggle {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.abilities-panel.collapsed .abilities-collapse-toggle:hover {
+  background: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.6);
+}

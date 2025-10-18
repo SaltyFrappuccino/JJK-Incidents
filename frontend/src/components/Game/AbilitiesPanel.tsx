@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGame } from '../../contexts/GameContext';
-import { ActiveAbility } from '../../types/AbilityTypes';
+import type { ActiveAbility } from '../../types/AbilityTypes';
 
 export function AbilitiesPanel() {
   const { myAbilities, gameState, useAbility } = useGame();
@@ -8,6 +8,7 @@ export function AbilitiesPanel() {
   const [selectedTarget, setSelectedTarget] = useState<string>('');
   const [isConfirming, setIsConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   if (!gameState || !['reveal', 'discussion', 'voting'].includes(gameState.phase)) {
     return null;
@@ -67,32 +68,43 @@ export function AbilitiesPanel() {
   );
 
   return (
-    <div className="abilities-panel">
-      <h3>🔮 Активные Способности</h3>
-      
-      <div className="abilities-list">
-        {myAbilities.map((ability) => (
-          <div 
-            key={ability.id} 
-            className={`ability-card ${ability.usesRemaining <= 0 ? 'ability-used' : ''}`}
-          >
-            <div className="ability-header">
-              <span className="ability-name">{ability.name}</span>
-              <span className="ability-uses">
-                {ability.usesRemaining}/{ability.maxUses}
-              </span>
-            </div>
-            <p className="ability-description">{ability.description}</p>
-            <button
-              onClick={() => handleUseAbility(ability)}
-              disabled={ability.usesRemaining <= 0}
-              className="ability-button"
-            >
-              {ability.usesRemaining <= 0 ? 'Использовано' : 'Использовать'}
-            </button>
-          </div>
-        ))}
+    <div className={`abilities-panel ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className="abilities-panel-header">
+        <h3>🔮 Активные Способности</h3>
+        <button 
+          className="abilities-collapse-toggle" 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          title={isCollapsed ? "Развернуть панель способностей" : "Свернуть панель способностей"}
+        >
+          {isCollapsed ? '▼' : '▲'}
+        </button>
       </div>
+      
+      {!isCollapsed && (
+        <div className="abilities-list">
+          {myAbilities.map((ability) => (
+            <div 
+              key={ability.id} 
+              className={`ability-card ${ability.usesRemaining <= 0 ? 'ability-used' : ''}`}
+            >
+              <div className="ability-header">
+                <span className="ability-name">{ability.name}</span>
+                <span className="ability-uses">
+                  {ability.usesRemaining}/{ability.maxUses}
+                </span>
+              </div>
+              <p className="ability-description">{ability.description}</p>
+              <button
+                onClick={() => handleUseAbility(ability)}
+                disabled={ability.usesRemaining <= 0}
+                className="ability-button"
+              >
+                {ability.usesRemaining <= 0 ? 'Использовано' : 'Использовать'}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {isConfirming && selectedAbility && (
         <div className="ability-modal-overlay" onClick={handleCancel}>

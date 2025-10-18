@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useGame, CharacterCard } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/GameContext';
+import type { CharacterCard } from '../../contexts/GameContext';
 
 interface CharacterSheetProps {
   onCharacteristicSelect: (categoryIndex: number) => void;
@@ -111,9 +112,6 @@ export function CharacterSheet({ onCharacteristicSelect, selectedCategory, canSe
 
                 <div className="category-content">
                   <div className="value">{formatValue(category.value)}</div>
-                  {!isRevealed && canSelect && (
-                    <div className="not-revealed-hint">Нажмите для раскрытия</div>
-                  )}
                   {isSelected && !isRevealed && (
                     <div className="selected-hint">Выбрано для раскрытия</div>
                   )}

@@ -319,8 +319,8 @@ export class GameManager {
     player.revealedCategory = categoryIndex;
     
     // Устанавливаем hasRevealed только если игрок раскрыл все необходимые характеристики
-    const requiredReveals = room.currentRound === 1 ? 2 : 1;
-    player.hasRevealed = player.revealedCount >= requiredReveals;
+    const requiredRevealsForPlayer = room.currentRound === 1 ? 2 : 1;
+    player.hasRevealed = player.revealedCount >= requiredRevealsForPlayer;
 
     console.log(`[GameManager] Обновлён флаг revealed для игрока ${player.name} (${playerId}), роль=${player.role}, категория=${categoryNames[categoryIndex]}`);
 

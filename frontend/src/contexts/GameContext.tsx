@@ -67,13 +67,13 @@ export interface RevealedCharacteristic {
 
 export interface CharacterCard {
   rank: { revealed: boolean; value: string };
-  cursedTechnique: { revealed: boolean; value: string };
+  cursedTechnique: { revealed: boolean; value: string; description?: string };
   cursedEnergyLevel: { revealed: boolean; value: string };
-  generalTechniques: { revealed: boolean; value: string[] };
+  generalTechniques: { revealed: boolean; value: string[]; descriptions?: string[] };
   cursedTools: { revealed: boolean; value: string[] };
   strengths: { revealed: boolean; value: string[] };
   weaknesses: { revealed: boolean; value: string[] };
-  specialTraits: { revealed: boolean; value: string[] };
+  specialTraits: { revealed: boolean; value: string[]; descriptions?: string[] };
   currentState: { revealed: boolean; value: string };
 }
 

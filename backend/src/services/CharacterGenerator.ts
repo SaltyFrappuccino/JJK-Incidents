@@ -34,16 +34,16 @@ export class CharacterGenerator {
 
   generateCharacter(options: CharacterGenerationOptions = {}): CharacterCard {
     const rank = this.selectWeightedRandom(this.pools.ranks);
-    const cursedTechnique = this.selectWeightedRandomName(this.pools.cursedTechniques);
+    const cursedTechniqueItem = this.selectWeightedRandomItem(this.pools.cursedTechniques);
     const cursedEnergyLevel = this.selectWeightedRandom(this.pools.cursedEnergyLevels);
-    const generalTechniques = this.selectMultipleWeighted(this.pools.generalTechniques, 0, 3);
+    const generalTechniquesItems = this.selectMultipleWeightedItems(this.pools.generalTechniques, 0, 3);
     const cursedTools = Math.random() < (options.cursedToolChance || 0.4) 
       ? this.selectMultipleWeighted(this.pools.cursedTools, 1, 2) 
       : [];
     const strengths = this.selectMultipleWeighted(this.pools.strengths, 1, 2);
     const weaknesses = this.selectMultipleWeighted(this.pools.weaknesses, 1, 2);
-    const specialTraits = Math.random() < (options.specialTraitChance || 0.4)
-      ? this.selectSpecialTraits()
+    const specialTraitsItems = Math.random() < (options.specialTraitChance || 0.4)
+      ? this.selectSpecialTraitsItems()
       : [];
     const currentState = this.selectWeightedRandomName(this.pools.states) as PlayerState;
 
@@ -54,7 +54,8 @@ export class CharacterGenerator {
       },
       cursedTechnique: {
         revealed: false,
-        value: cursedTechnique
+        value: cursedTechniqueItem.name,
+        ...(cursedTechniqueItem.description && { description: cursedTechniqueItem.description })
       },
       cursedEnergyLevel: {
         revealed: false,
@@ -62,7 +63,8 @@ export class CharacterGenerator {
       },
       generalTechniques: {
         revealed: false,
-        value: generalTechniques
+        value: generalTechniquesItems.map(item => item.name),
+        descriptions: generalTechniquesItems.map(item => item.description).filter((desc): desc is string => Boolean(desc))
       },
       cursedTools: {
         revealed: false,
@@ -78,7 +80,8 @@ export class CharacterGenerator {
       },
       specialTraits: {
         revealed: false,
-        value: specialTraits
+        value: specialTraitsItems.map(item => item.name),
+        descriptions: specialTraitsItems.map(item => item.description).filter((desc): desc is string => Boolean(desc))
       },
       currentState: {
         revealed: false,
@@ -88,6 +91,10 @@ export class CharacterGenerator {
   }
 
   private selectWeightedRandom<T>(items: { value: T; weight: number }[]): T {
+    if (items.length === 0) {
+      throw new Error('Cannot select from empty array');
+    }
+    
     const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
     let random = Math.random() * totalWeight;
     
@@ -98,10 +105,14 @@ export class CharacterGenerator {
       }
     }
     
-    return items[items.length - 1].value;
+    return items[items.length - 1]!.value;
   }
 
   private selectWeightedRandomName(items: WeightedName[]): string {
+    if (items.length === 0) {
+      throw new Error('Cannot select from empty array');
+    }
+    
     const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
     let random = Math.random() * totalWeight;
     
@@ -112,18 +123,27 @@ export class CharacterGenerator {
       }
     }
     
-    return items[items.length - 1].name;
+    return items[items.length - 1]!.name;
   }
 
-  private selectRandom<T>(items: T[]): T {
-    return items[Math.floor(Math.random() * items.length)];
+  private selectWeightedRandomItem(items: WeightedName[]): WeightedName {
+    if (items.length === 0) {
+      throw new Error('Cannot select from empty array');
+    }
+    
+    const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
+    let random = Math.random() * totalWeight;
+    
+    for (const item of items) {
+      random -= item.weight;
+      if (random <= 0) {
+        return item;
+      }
+    }
+    
+    return items[items.length - 1]!;
   }
 
-  private selectMultiple<T>(items: T[], min: number, max: number): T[] {
-    const count = Math.floor(Math.random() * (max - min + 1)) + min;
-    const shuffled = [...items].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, count);
-  }
 
   private selectMultipleWeighted(items: WeightedName[], min: number, max: number): string[] {
     const count = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -143,14 +163,33 @@ export class CharacterGenerator {
     return selected;
   }
 
-  private selectSpecialTraits(): string[] {
+  private selectMultipleWeightedItems(items: WeightedName[], min: number, max: number): WeightedName[] {
+    const count = Math.floor(Math.random() * (max - min + 1)) + min;
+    const selected: WeightedName[] = [];
+    const availableItems = [...items];
+    
+    for (let i = 0; i < count && availableItems.length > 0; i++) {
+      const selectedItem = this.selectWeightedRandomItem(availableItems);
+      selected.push(selectedItem);
+      // Remove selected item to avoid duplicates
+      const index = availableItems.findIndex(item => item.name === selectedItem.name);
+      if (index !== -1) {
+        availableItems.splice(index, 1);
+      }
+    }
+    
+    return selected;
+  }
+
+
+  private selectSpecialTraitsItems(): WeightedName[] {
     const traits = this.pools.specialTraits;
-    const selectedTraits: string[] = [];
+    const selectedTraits: WeightedName[] = [];
     
     // Use weighted selection for special traits
     // Always select at least one special trait when this method is called
     if (traits.length > 0) {
-      selectedTraits.push(this.selectWeightedRandomName(traits));
+      selectedTraits.push(this.selectWeightedRandomItem(traits));
     }
     
     return selectedTraits;

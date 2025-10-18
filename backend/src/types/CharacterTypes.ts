@@ -31,6 +31,7 @@ export interface WeightedValue<T = string> {
 export interface WeightedName {
   name: string;
   weight: number;
+  description?: string; // Опционально для обратной совместимости
 }
 
 
@@ -46,6 +47,7 @@ export interface CharacterCard {
   // 2. Cursed Technique (innate ability)
   cursedTechnique: Characteristic & {
     value: string;
+    description?: string; // Для AI контекста
   };
   
   // 3. Cursed Energy Level
@@ -55,6 +57,7 @@ export interface CharacterCard {
   generalTechniques: {
     revealed: boolean;
     value: string[];
+    descriptions?: string[]; // Для AI контекста
   };
   
   // 5. Cursed Tools (40% chance to have)
@@ -79,6 +82,7 @@ export interface CharacterCard {
   specialTraits: {
     revealed: boolean;
     value: string[];
+    descriptions?: string[]; // Для AI контекста
   };
   
   // 9. Current State

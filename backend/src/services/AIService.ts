@@ -98,13 +98,13 @@ ${gameData.mission.dangerFactors.map((df, i) => `${i + 1}. ${df}`).join('\n')}
 ${gameData.survivors.map((survivor, i) => `
 ${i + 1}. Шаман ${survivor.playerName}
    - Ранг: ${survivor.character.rank.value}
-   - Проклятая техника: ${survivor.character.cursedTechnique.value}
+   - Проклятая техника: ${survivor.character.cursedTechnique.value}${survivor.character.cursedTechnique.description ? ` (${survivor.character.cursedTechnique.description})` : ''}
    - Уровень энергии: ${survivor.character.cursedEnergyLevel.value}
-   - Общие техники: ${survivor.character.generalTechniques.value.join(', ') || 'Нет'}
+   - Общие техники: ${survivor.character.generalTechniques.value.join(', ') || 'Нет'}${survivor.character.generalTechniques.descriptions && survivor.character.generalTechniques.descriptions.length > 0 ? ` (${survivor.character.generalTechniques.descriptions.join(', ')})` : ''}
    - Инструменты: ${survivor.character.cursedTools.value.join(', ') || 'Нет'}
    - Сильные стороны: ${survivor.character.strengths.value.join(', ')}
    - Слабые стороны: ${survivor.character.weaknesses.value.join(', ')}
-   - Особые черты: ${survivor.character.specialTraits.value.join(', ') || 'Нет'}
+   - Особые черты: ${survivor.character.specialTraits.value.join(', ') || 'Нет'}${survivor.character.specialTraits.descriptions && survivor.character.specialTraits.descriptions.length > 0 ? ` (${survivor.character.specialTraits.descriptions.join(', ')})` : ''}
    - Состояние: ${survivor.character.currentState.value}
 `).join('\n')}
 

@@ -101,7 +101,7 @@ ${i + 1}. Шаман ${survivor.playerName}
    - Проклятая техника: ${survivor.character.cursedTechnique.value}${survivor.character.cursedTechnique.description ? ` (${survivor.character.cursedTechnique.description})` : ''}
    - Уровень энергии: ${survivor.character.cursedEnergyLevel.value}
    - Общие техники: ${survivor.character.generalTechniques.value.join(', ') || 'Нет'}${survivor.character.generalTechniques.descriptions && survivor.character.generalTechniques.descriptions.length > 0 ? ` (${survivor.character.generalTechniques.descriptions.join(', ')})` : ''}
-   - Инструменты: ${survivor.character.cursedTools.value.join(', ') || 'Нет'}
+   - Инструменты: ${survivor.character.cursedTools.value.join(', ') || 'Нет'}${survivor.character.cursedTools.descriptions && survivor.character.cursedTools.descriptions.length > 0 ? ` (${survivor.character.cursedTools.descriptions.join(', ')})` : ''}
    - Сильные стороны: ${survivor.character.strengths.value.join(', ')}
    - Слабые стороны: ${survivor.character.weaknesses.value.join(', ')}
    - Особые черты: ${survivor.character.specialTraits.value.join(', ') || 'Нет'}${survivor.character.specialTraits.descriptions && survivor.character.specialTraits.descriptions.length > 0 ? ` (${survivor.character.specialTraits.descriptions.join(', ')})` : ''}

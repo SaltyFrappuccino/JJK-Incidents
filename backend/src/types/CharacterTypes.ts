@@ -64,6 +64,7 @@ export interface CharacterCard {
   cursedTools: {
     revealed: boolean;
     value: string[];
+    descriptions?: string[]; // Для AI контекста
   };
   
   // 6. Strengths

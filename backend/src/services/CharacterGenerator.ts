@@ -37,8 +37,8 @@ export class CharacterGenerator {
     const cursedTechniqueItem = this.selectWeightedRandomItem(this.pools.cursedTechniques);
     const cursedEnergyLevel = this.selectWeightedRandom(this.pools.cursedEnergyLevels);
     const generalTechniquesItems = this.selectMultipleWeightedItems(this.pools.generalTechniques, 0, 3);
-    const cursedTools = Math.random() < (options.cursedToolChance || 0.4) 
-      ? this.selectMultipleWeighted(this.pools.cursedTools, 1, 2) 
+    const cursedToolsItems = Math.random() < (options.cursedToolChance || 0.4) 
+      ? this.selectMultipleWeightedItems(this.pools.cursedTools, 1, 2) 
       : [];
     const strengths = this.selectMultipleWeighted(this.pools.strengths, 1, 2);
     const weaknesses = this.selectMultipleWeighted(this.pools.weaknesses, 1, 2);
@@ -68,7 +68,8 @@ export class CharacterGenerator {
       },
       cursedTools: {
         revealed: false,
-        value: cursedTools
+        value: cursedToolsItems.map(item => item.name),
+        descriptions: cursedToolsItems.map(item => item.description).filter((desc): desc is string => Boolean(desc))
       },
       strengths: {
         revealed: false,

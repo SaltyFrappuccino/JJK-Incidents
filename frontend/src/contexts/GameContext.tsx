@@ -70,7 +70,7 @@ export interface CharacterCard {
   cursedTechnique: { revealed: boolean; value: string; description?: string };
   cursedEnergyLevel: { revealed: boolean; value: string };
   generalTechniques: { revealed: boolean; value: string[]; descriptions?: string[] };
-  cursedTools: { revealed: boolean; value: string[] };
+  cursedTools: { revealed: boolean; value: string[]; descriptions?: string[] };
   strengths: { revealed: boolean; value: string[] };
   weaknesses: { revealed: boolean; value: string[] };
   specialTraits: { revealed: boolean; value: string[]; descriptions?: string[] };

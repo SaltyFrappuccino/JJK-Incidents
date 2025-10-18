@@ -30,9 +30,12 @@ export function SocketProvider({ children }: SocketProviderProps) {
     console.log('Connecting to WebSocket server:', wsUrl);
 
     const newSocket = io(wsUrl, {
-      transports: ['websocket', 'polling'],
-      timeout: 5000,
-      forceNew: true
+      // Используем только polling для Vercel (Vercel не поддерживает WebSocket rewrites)
+      transports: ['polling'],
+      timeout: 10000,
+      forceNew: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
     });
 
     newSocket.on('connect', () => {

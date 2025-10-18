@@ -195,6 +195,19 @@ export function MusicProvider({ children }: { children: React.ReactNode }) {
             console.log('Setting audio src to:', track.file);
             audioRef.current.src = track.file;
             audioRef.current.load();
+            
+            // Auto-play after track is loaded
+            audioRef.current.addEventListener('canplay', () => {
+              console.log('Track loaded, attempting auto-play');
+              audioRef.current?.play().then(() => {
+                console.log('Auto-play successful');
+                dispatch({ type: 'SET_PLAYING', payload: true });
+                dispatch({ type: 'SET_ERROR', payload: null });
+              }).catch((error) => {
+                console.log('Auto-play blocked by browser:', error);
+                dispatch({ type: 'SET_ERROR', payload: 'Автовоспроизведение заблокировано браузером. Нажмите ▶ для запуска музыки.' });
+              });
+            }, { once: true });
           }
         }
       } catch (error) {

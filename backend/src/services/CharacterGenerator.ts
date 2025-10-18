@@ -42,7 +42,7 @@ export class CharacterGenerator {
       : [];
     const strengths = this.selectMultipleWeighted(this.pools.strengths, 1, 2);
     const weaknesses = this.selectMultipleWeighted(this.pools.weaknesses, 1, 2);
-    const specialTraits = Math.random() < (options.specialTraitChance || 0.15)
+    const specialTraits = Math.random() < (options.specialTraitChance || 0.4)
       ? this.selectSpecialTraits()
       : [];
     const currentState = this.selectWeightedRandomName(this.pools.states) as PlayerState;
@@ -148,8 +148,8 @@ export class CharacterGenerator {
     const selectedTraits: string[] = [];
     
     // Use weighted selection for special traits
-    // Roll for special traits (15% chance)
-    if (Math.random() < 0.15 && traits.length > 0) {
+    // Always select at least one special trait when this method is called
+    if (traits.length > 0) {
       selectedTraits.push(this.selectWeightedRandomName(traits));
     }
     

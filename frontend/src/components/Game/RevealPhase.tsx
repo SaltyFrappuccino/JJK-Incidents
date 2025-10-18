@@ -12,8 +12,9 @@ export function RevealPhase({ onPhaseComplete }: RevealPhaseProps) {
     return <div>Загрузка...</div>;
   }
 
-  const revealedCount = gameState.players.filter(p => p.hasRevealed).length;
-  const totalPlayers = gameState.players.length;
+  const activePlayers = gameState.players.filter(p => !gameState.eliminatedPlayers.includes(p.id));
+  const revealedCount = activePlayers.filter(p => p.hasRevealed).length;
+  const totalPlayers = activePlayers.length;
 
   return (
     <div className="reveal-phase-info">

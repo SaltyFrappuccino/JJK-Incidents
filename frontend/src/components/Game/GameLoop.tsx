@@ -312,7 +312,7 @@ export function GameLoop({ onGameComplete }: GameLoopProps) {
           </div>
           
           <div className="team-status">
-            <span>Команда: {gameState?.players.length || 0}</span>
+            <span>Команда: {gameState?.players.filter(p => !gameState.eliminatedPlayers.includes(p.id)).length || 0}</span>
             <span>Требуется: {gameState?.strikeTeamSize || 0}</span>
           </div>
         </div>

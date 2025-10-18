@@ -23,33 +23,36 @@ export function TeamTable() {
     const characteristics: PlayerCharacteristics = {};
     
     playerRevealed.forEach(rc => {
+      // Преобразуем значение в строку для корректного отображения
+      const valueString = Array.isArray(rc.value) ? rc.value.join(', ') : rc.value;
+      
       switch (rc.categoryName) {
         case 'Ранг':
-          characteristics.rank = { value: rc.value };
+          characteristics.rank = { value: valueString };
           break;
         case 'Проклятая Техника':
-          characteristics.cursedTechnique = { value: rc.value };
+          characteristics.cursedTechnique = { value: valueString };
           break;
         case 'Уровень Проклятой Энергии':
-          characteristics.cursedEnergyLevel = { value: rc.value };
+          characteristics.cursedEnergyLevel = { value: valueString };
           break;
         case 'Общие Техники':
-          characteristics.generalTechniques = { value: rc.value };
+          characteristics.generalTechniques = { value: valueString };
           break;
         case 'Проклятые Инструменты':
-          characteristics.cursedTools = { value: rc.value };
+          characteristics.cursedTools = { value: valueString };
           break;
         case 'Сильные Стороны':
-          characteristics.strengths = { value: rc.value };
+          characteristics.strengths = { value: valueString };
           break;
         case 'Слабые Стороны':
-          characteristics.weaknesses = { value: rc.value };
+          characteristics.weaknesses = { value: valueString };
           break;
         case 'Особые Черты':
-          characteristics.specialTraits = { value: rc.value };
+          characteristics.specialTraits = { value: valueString };
           break;
         case 'Текущее Состояние':
-          characteristics.currentState = { value: rc.value };
+          characteristics.currentState = { value: valueString };
           break;
       }
     });

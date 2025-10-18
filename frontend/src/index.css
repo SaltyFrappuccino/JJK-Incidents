@@ -3395,3 +3395,32 @@ html, body {
   color: var(--success);
   font-weight: bold;
 }
+
+/* ==========================================
+   Музыкальный плеер - автовоспроизведение
+   ========================================== */
+.music-player-error.autoplay-blocked {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  border: 2px solid #ff4757;
+  animation: pulse 2s infinite;
+}
+
+.autoplay-hint {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  opacity: 0.9;
+  text-align: center;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 107, 107, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0);
+  }
+}

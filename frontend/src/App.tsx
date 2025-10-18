@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SocketProvider } from './contexts/SocketContext';
 import { GameProvider, useGame } from './contexts/GameContext';
-import { MusicProvider } from './contexts/MusicContext';
+import { MusicProvider, useMusic } from './contexts/MusicContext';
 import { CreateRoom } from './components/Lobby/CreateRoom';
 import { JoinRoom } from './components/Lobby/JoinRoom';
 import { LobbyWaitingRoom } from './components/Lobby/LobbyWaitingRoom';
@@ -17,6 +17,7 @@ function AppContent() {
   const [roomCode, setRoomCode] = useState<string>('');
   const [playerId, setPlayerId] = useState<string>('');
   const { gameState, setMissionCompleteCallback } = useGame();
+  const { play, isPlaying, error } = useMusic();
 
   // Обработка hash-роутинга для админ-панели
   useEffect(() => {
@@ -51,6 +52,27 @@ function AppContent() {
   useEffect(() => {
     setMissionCompleteCallback(() => setAppState('epilogue'));
   }, [setMissionCompleteCallback]);
+
+  // Обработчик для включения музыки при первом клике пользователя
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      if (!isPlaying && error?.includes('заблокировано браузером')) {
+        console.log('User interaction detected, attempting to play music');
+        play();
+      }
+    };
+
+    // Добавляем обработчики для различных типов взаимодействия пользователя
+    document.addEventListener('click', handleUserInteraction, { once: true });
+    document.addEventListener('keydown', handleUserInteraction, { once: true });
+    document.addEventListener('touchstart', handleUserInteraction, { once: true });
+
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('keydown', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+    };
+  }, [isPlaying, error, play]);
 
   const handleRoomCreated = (code: string, id: string) => {
     setRoomCode(code);

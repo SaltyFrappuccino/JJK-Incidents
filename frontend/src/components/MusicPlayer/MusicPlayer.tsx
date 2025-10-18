@@ -72,8 +72,13 @@ export function MusicPlayer() {
       onMouseLeave={() => setIsExpanded(false)}
     >
       {error && (
-        <div className="music-player-error">
+        <div className={`music-player-error ${error.includes('заблокировано') ? 'autoplay-blocked' : ''}`}>
           {error}
+          {error.includes('заблокировано') && (
+            <div className="autoplay-hint">
+              💡 Кликните в любом месте экрана для запуска музыки
+            </div>
+          )}
         </div>
       )}
 

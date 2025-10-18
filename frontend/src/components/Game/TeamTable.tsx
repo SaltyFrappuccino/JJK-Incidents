@@ -1,5 +1,6 @@
 import React from 'react';
-import { useGame, RevealedCharacteristic } from '../../contexts/GameContext';
+import { useGame } from '../../contexts/GameContext';
+import type { RevealedCharacteristic } from '../../contexts/GameContext';
 
 interface PlayerCharacteristics {
   rank?: { value: string };
@@ -122,15 +123,14 @@ export function TeamTable() {
               return (
                 <tr 
                   key={player.id} 
-                  className={`player-row ${isMyPlayer ? 'my-player' : ''} ${player.role === 'host' ? 'host-player' : ''} ${isEliminated ? 'eliminated-player' : ''}`}
+                  className={`player-row ${isMyPlayer ? 'my-player' : ''} ${player.role === 'host' ? 'host-player' : ''}`}
                 >
                   <td className="player-cell">
                     <div className="player-info">
-                      <div className="player-name">
+                      <div className={`player-name ${isEliminated ? 'eliminated-name' : ''}`}>
                         {player.name}
                         {player.role === 'host' && <span className="badge host-badge">МИ</span>}
                         {isMyPlayer && <span className="badge you-badge">ВЫ</span>}
-                        {isEliminated && <span className="badge eliminated-badge">ИСКЛЮЧЕН</span>}
                       </div>
                       <div className="player-status">
                         {player.isConnected ? (

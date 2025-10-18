@@ -3227,24 +3227,10 @@ html, body {
 /* ==========================================
    Вылетевшие игроки
    ========================================== */
-.player-row.eliminated-player .player-name {
+.player-name.eliminated-name {
   color: #ef4444;
   text-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
   font-weight: 600;
-}
-
-.eliminated-badge {
-  background: linear-gradient(135deg, #dc3545, #c82333);
-  color: white;
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  margin-left: 8px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* ==========================================
